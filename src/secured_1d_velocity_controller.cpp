@@ -68,7 +68,7 @@ controller_interface::CallbackReturn Secured1dVelocityController::on_init()
 {
   // declare and get parameters needed for controller initialization
   // allocate memory that will exist for the life of the controller
-  control_mode_.initRT(control_mode_type::INFERRED_VELOCITY_SIGN_SECURITY);
+  control_mode_.initRT(control_mode_type::LIMITS_DISCOVERY);
 
   try
   {
@@ -265,6 +265,10 @@ controller_interface::CallbackReturn Secured1dVelocityController::on_activate(
   // `on_activate` method in `JointTrajectoryController` for examplary use of
   // `controller_interface::get_ordered_interfaces` helper function
 
+  // Define state interface indices for limit switches
+  limit_switch0_idx_ = 3;
+  limit_switch1_idx_ = 4;
+
   // Set default value in command
   reset_controller_reference_msg(*(input_ref_.readFromRT)());
 
@@ -279,6 +283,74 @@ controller_interface::CallbackReturn Secured1dVelocityController::on_deactivate(
     command_interfaces_[i].set_value(std::numeric_limits<double>::quiet_NaN());
   }
   return controller_interface::CallbackReturn::SUCCESS;
+}
+
+double Secured1dVelocityController::discover_limits__limit_reached_command(
+  const std::size_t limit_index, const double reference_velocity, const double current_velocity,
+  bool & blocked)
+{
+  // 2 cases: either it is the first time limit is reached (UNKNOWN) or not (KNOWN)
+
+  // Test KNOWN cases
+  if (discovery_state_.start_discovered && limit_index == discovery_state_.start_idx)
+  {
+    // We are in the case where the limit has already been reached
+    // We can check if the velocity is admissible
+    return limit_map_.admissible_velocity(limit_index, reference_velocity, blocked);
+  }
+
+  if (discovery_state_.end_discovered && limit_index == discovery_state_.end_idx)
+  {
+    // We are in the case where the limit has already been reached
+    // We can check if the velocity is admissible
+    return limit_map_.admissible_velocity(limit_index, reference_velocity, blocked);
+  }
+
+  // Handle UNKNOWN case
+  blocked = true;  // We block the velocity
+  const auto current_vel_mag = std::abs(current_velocity);
+  if (current_vel_mag < zero_velocity_tolerance_)
+  {
+    // We are in the case where the velocity is 0
+    // We cannot learn the limit position because velocity direction can be false due to noise
+    // We don't move
+    RCLCPP_ERROR(
+      get_node()->get_logger(),
+      "We cannot make limit discovery with a too small velocity (%f). Please, manually set the "
+      "system in a non limit position.",
+      current_velocity);
+    return 0.;
+  }
+
+  if (current_velocity > 0.)
+  {
+    // We discovered the end limit
+    discovery_state_.end_discovered = true;
+    discovery_state_.end_idx = limit_index;
+    limit_map_.end_siidx = limit_index;
+    RCLCPP_INFO(
+      get_node()->get_logger(), "Discovered end limit, interface index %zu with velocity %f",
+      limit_index, current_velocity);
+  }
+  else
+  {
+    // We discovered the start limit
+    discovery_state_.start_discovered = true;
+    discovery_state_.start_idx = limit_index;
+    limit_map_.start_siidx = limit_index;
+    RCLCPP_INFO(
+      get_node()->get_logger(), "Discovered start limit, interface index %zu with velocity %f",
+      limit_index, current_velocity);
+  }
+
+  if (discovery_state_.discovery_is_done())
+  {
+    control_mode_.writeFromNonRT(control_mode_type::LIMITS_DISCOVERED);
+    RCLCPP_INFO(
+      get_node()->get_logger(),
+      "All limits discovered: change control_mode_type to LIMITS_DISCOVERED");
+  }
+  return 0.;
 }
 
 inline void Secured1dVelocityController::record_limit_switch_state(
@@ -298,6 +370,35 @@ inline void Secured1dVelocityController::record_limit_switch_state(
   limit_switch_right_prev_active_state_ = limit_right_active;
 }
 
+inline void Secured1dVelocityController::log_blocked_velocity_command(
+  const bool block, const double current_ref, const double current_velocity)
+{
+  auto current_vel_mag = std::abs(current_velocity);
+  if (current_vel_mag < zero_velocity_tolerance_)
+  {
+    return;
+  }
+
+  if (block && !velocity_reference_cmd_is_blocked_)
+  {
+    RCLCPP_INFO(
+      get_node()->get_logger(),
+      "Blocked velocity command %f because of limit switch (current_velocity was %f)", current_ref,
+      current_velocity);
+    velocity_reference_cmd_is_blocked_ = true;
+  }
+  else
+  {
+    if (!block && velocity_reference_cmd_is_blocked_)
+    {
+      RCLCPP_INFO(
+        get_node()->get_logger(), "Unblocked velocity command %f (current_velocity was %f)",
+        current_ref, current_velocity);
+      velocity_reference_cmd_is_blocked_ = false;
+    }
+  }
+}
+
 controller_interface::return_type Secured1dVelocityController::update(
   const rclcpp::Time & time, const rclcpp::Duration & /*period*/)
 {
@@ -309,13 +410,15 @@ controller_interface::return_type Secured1dVelocityController::update(
     return controller_interface::return_type::ERROR;
   }
 
-  auto current_ref = (*current_ref_msg)->data;
+  const auto current_ref = (*current_ref_msg)->data;
+  const auto current_velocity = state_interfaces_[0].get_value();
+  const auto current_position = state_interfaces_[1].get_value();
+  const auto current_effort = state_interfaces_[2].get_value();
+  const auto current_limit_switch0 = state_interfaces_[3].get_value();
+  const auto current_limit_switch1 = state_interfaces_[4].get_value();
 
-  const auto current_limit_switch_left = state_interfaces_[3].get_value();
-  const auto current_limit_switch_right = state_interfaces_[4].get_value();
-
-  const bool limit_left_active = (current_limit_switch_left != 0);
-  const bool limit_right_active = (current_limit_switch_right != 0);
+  const bool limit0_active = (current_limit_switch0 != 0);
+  const bool limit1_active = (current_limit_switch1 != 0);
 
   if (!std::isnan(current_ref))
   {  // Velocity reference command is well defined
@@ -323,136 +426,68 @@ controller_interface::return_type Secured1dVelocityController::update(
     // if (0.0 == current_ref)
     if (ref_vel_mag < zero_velocity_tolerance_)
     {  // Velocity reference command is 0.0, set velocity to 0.0
-      command_interfaces_[0].set_value(0.0);
+      command_interfaces_[0].set_value(0.);
       return controller_interface::return_type::OK;
     }
 
-    const auto current_velocity = state_interfaces_[0].get_value();
-    const auto current_position = state_interfaces_[1].get_value();
-    const auto current_effort = state_interfaces_[2].get_value();
-
-    const auto current_vel_mag = std::abs(current_velocity);
-
-    if (limit_left_active && limit_right_active)
+    if (limit0_active && limit1_active)
     {
       // Both limit switches are active (that is very bad!), set velocity to 0.0
       RCLCPP_ERROR(get_node()->get_logger(), "Both limit switches are active");
-      command_interfaces_[0].set_value(0.0);
-      record_limit_switch_state(limit_left_active, limit_right_active);
+      command_interfaces_[0].set_value(0.);
+      record_limit_switch_state(limit0_active, limit1_active);
       return controller_interface::return_type::OK;
     }
 
-    if (limit_left_active || limit_right_active)
-    {
-      if (current_vel_mag > zero_velocity_tolerance_)
-      {
-        // Current velocity is not 0
-        //=========================
-
-        // 1 limit switch is active, set velocity to 0.0 if velocity reference command has same sign
-        // as current velocity
-        if (
-          (current_velocity > 0. && current_ref > 0.) ||
-          (current_velocity < 0. && current_ref < 0.))
-        {  // Current velocity and wished velocity (reference command) have the same sign.
-           // So we are asked to continue a movement that has already exceeded the limit.
-           // So we stop the movement.
-          command_interfaces_[0].set_value(0.);
-
-          // Record the velocity sign associated with the limit violated
-          if (limit_left_active)
-          {  // Left limit switch is active
-            limit_switch_left_violating_velocity_sign_ = current_ref > 0. ? 1.0 : -1.0;
-            limit_switch_right_violating_velocity_sign_ =
-              -limit_switch_left_violating_velocity_sign_;
-          }
-          else
-          {
-            // Right limit switch is active
-            limit_switch_right_violating_velocity_sign_ = current_ref > 0. ? 1.0 : -1.0;
-            limit_switch_left_violating_velocity_sign_ =
-              -limit_switch_right_violating_velocity_sign_;
-          }
-          // Velocity sign associated with the violated limit is recorded
-          record_limit_switch_state(limit_left_active, limit_right_active);
-          return controller_interface::return_type::OK;
-        }
-        else
-        {
-          // Current velocity is not 0 and
-          // current velocity and wished velocity (reference command) have different signs.
-          // So we are asked to move in the opposite direction of the limit that was exceeded.
-          // So we perform the movement as asked.
-          command_interfaces_[0].set_value(current_ref);
-          record_limit_switch_state(limit_left_active, limit_right_active);
-          return controller_interface::return_type::OK;
-        }
-      }
-      else
-      {
-        // Current velocity is considered 0
-        //=================================
-
-        // We don't know the current velocity sign, so we don't move except if we have already
-        // learned the authorized velocity signs
-        if (limit_left_active)
-        {  // switch left is the only active one
-          if (limit_switch_left_violating_velocity_sign_ * current_ref < 0.)
-          {  // Last recorded velocity and wished velocity (reference command) have different
-             // signs
-            // So we are asked to move in the opposite direction of the limit that was exceeded.
-            // So we perform the movement as asked.
-            // TODO: check if we cannot have a fast one instruction that check that signs are
-            // different instead of multiplying
-            command_interfaces_[0].set_value(current_ref);
-          }
-          else
-          {
-            // Either:
-            // last recorded velocity and wished velocity (reference command) have the same sign
-            // So we are asked to continue a movement that has already exceeded the limit.
-            // And we stop the movement.
-            // Or:
-            // there is no recorded velocity sign so we don't know where we came from and we
-            // don't move.
-            command_interfaces_[0].set_value(0.);
-          }
-        }
-        else
-        {
-          // switch right is the only active one
-          if (limit_switch_right_violating_velocity_sign_ * current_ref < 0.)
-          {  // Check if we cannot have a fast one instruction that check that signs are
-             // different instead of multiplying
-            command_interfaces_[0].set_value(current_ref);
-          }
-          else
-          {
-            // Either:
-            // last recorded velocity and wished velocity (reference command) have the same sign
-            // So we are asked to continue a movement that has already exceeded the limit.
-            // And we stop the movement.
-            // Or:
-            // there is no recorded velocity sign so we don't know where we came from and we
-            // don't move.
-            command_interfaces_[0].set_value(0.);
-          }
-        }
-      }
-    }
-    else
+    if (!limit0_active && !limit1_active)
     {
       // Limit switches are inactive, set velocity to velocity reference command
       command_interfaces_[0].set_value(current_ref);
-      record_limit_switch_state(limit_left_active, limit_right_active);
+      record_limit_switch_state(limit0_active, limit1_active);
+      // Log the fact that we unblocked the velocity
+      log_blocked_velocity_command(false, current_ref, current_velocity);
       return controller_interface::return_type::OK;
+    }
+    else
+    {
+      std::size_t limit_idx = 666666;
+      if (limit0_active)
+      {
+        limit_idx = limit_switch0_idx_;
+      }
+      else
+      {
+        limit_idx = limit_switch1_idx_;
+      }
+
+      bool blocked = false;
+      double vel_cmd = std::numeric_limits<double>::quiet_NaN();
+
+      // 1 limit switch is active, only move in an admissible direction
+      // if the limits are known, we can check if the velocity is admissible
+      if (control_mode_type::LIMITS_DISCOVERED == *(control_mode_.readFromRT()))
+      {
+        vel_cmd = limit_map_.admissible_velocity(limit_idx, current_ref, blocked);
+      }
+      else
+      {
+        // Limits have yet to be mapped
+        vel_cmd =
+          discover_limits__limit_reached_command(limit_idx, current_ref, current_velocity, blocked);
+      }
+
+      command_interfaces_[0].set_value(vel_cmd);
+      record_limit_switch_state(limit0_active, limit1_active);
+      log_blocked_velocity_command(blocked, current_ref, current_velocity);
     }
   }
   else
   {
     // Velocity reference command is NaN, set velocity to 0.0
     command_interfaces_[0].set_value(0.);
-    record_limit_switch_state(limit_left_active, limit_right_active);
+    record_limit_switch_state(limit0_active, limit1_active);
+    // Log the fact that we blocked the velocity
+    log_blocked_velocity_command(true, current_ref, current_velocity);
     return controller_interface::return_type::OK;
   }
 

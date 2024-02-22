@@ -38,8 +38,144 @@ namespace secured_1d_velocity_controller
 enum class control_mode_type : std::uint8_t
 {
   UNKNWON = 0,
-  INFERRED_VELOCITY_SIGN_SECURITY = 1,
-  SPECIFIED_VELOCITY_SIGN_SECURITY = 2
+  LIMITS_DISCOVERY = 1,
+  LIMITS_DISCOVERED = 2,
+  CALIBRATED = 3
+};
+
+/**
+ * LimitDiscoveryState is a structure that holds the state of the
+ * limit discovery process.
+ */
+struct LimitDiscoveryState
+{
+  bool start_discovered = false;
+  std::size_t start_idx = 666666;
+  bool end_discovered = false;
+  std::size_t end_idx = 666666;
+
+public:
+  inline bool discovery_is_done() const { return start_discovered && end_discovered; }
+  inline bool limit_known(const std::size_t limit_index) const
+  {
+    if (start_discovered && limit_index == start_idx)
+    {
+      return true;
+    }
+    if (end_discovered && limit_index == end_idx)
+    {
+      return true;
+    }
+    return false;
+  }
+};
+
+/**
+ * LimitMapping stores the respective position of the limit switches
+ * with respect to the joint displacement direction.
+ * The start limit is the limit switch that is reached when the joint
+ * moves in the negative direction (backward).
+ * The end limit is the limit switch that is reached when the joint
+ * moves in the positive direction (forward).
+ */
+struct LimitMapping
+{
+public:
+  /* Map interface indices to limit positions */
+  std::size_t start_siidx;  //< start limit state_interface index;
+  std::size_t end_siidx;    //< end limit state_interface index;
+
+public:
+  /* Map interface names to limit positions */
+  std::string joint_name;
+  std::string start_limit;
+  std::string end_limit;
+
+public:
+  inline double admissible_velocity(
+    const std::size_t limit_switch, const double reference_velocity, bool & blocked) const
+  {
+    if (limit_switch == start_siidx)
+    {
+      if (reference_velocity < 0.0)
+      {
+        blocked = true;
+        return 0.0;
+      }
+    }
+    else if (limit_switch == end_siidx)
+    {
+      if (reference_velocity > 0.0)
+      {
+        blocked = true;
+        return 0.0;
+      }
+    }
+    blocked = false;
+    return reference_velocity;
+  }
+
+  inline double admissible_velocity(
+    const std::size_t limit_switch, const double reference_velocity) const
+  {
+    if (limit_switch == start_siidx)
+    {
+      if (reference_velocity < 0.0)
+      {
+        return 0.0;
+      }
+    }
+    else if (limit_switch == end_siidx)
+    {
+      if (reference_velocity > 0.0)
+      {
+        return 0.0;
+      }
+    }
+    return reference_velocity;
+  }
+
+public:
+  inline LimitMapping() = default;
+
+  inline LimitMapping(
+    const std::string & joint_name, const std::string & start_limit, const std::string & end_limit,
+    const std::size_t start_siidx, const std::size_t end_siidx)
+  : start_siidx(start_siidx),
+    end_siidx(end_siidx),
+    joint_name(joint_name),
+    start_limit(start_limit),
+    end_limit(end_limit)
+  {
+  }
+
+  inline LimitMapping(const LimitMapping & other)
+  : start_siidx(other.start_siidx),
+    end_siidx(other.end_siidx),
+    joint_name(other.joint_name),
+    start_limit(other.start_limit),
+    end_limit(other.end_limit)
+  {
+  }
+
+  inline LimitMapping & operator=(const LimitMapping & other)
+  {
+    start_siidx = other.start_siidx;
+    end_siidx = other.end_siidx;
+    joint_name = other.joint_name;
+    start_limit = other.start_limit;
+    end_limit = other.end_limit;
+    return *this;
+  }
+
+  inline bool operator==(const LimitMapping & other) const
+  {
+    return start_siidx == other.start_siidx && end_siidx == other.end_siidx &&
+           joint_name == other.joint_name && start_limit == other.start_limit &&
+           end_limit == other.end_limit;
+  }
+
+  inline bool operator!=(const LimitMapping & other) const { return !(*this == other); }
 };
 
 class Secured1dVelocityController : public controller_interface::ControllerInterface
@@ -98,17 +234,33 @@ protected:
   rclcpp::Publisher<ControllerStateMsg>::SharedPtr s_publisher_;
   std::unique_ptr<ControllerStatePublisher> state_publisher_;
 
+protected:
+  LimitDiscoveryState discovery_state_;
+  LimitMapping limit_map_;
+  size_t limit_switch0_idx_ = 666666;
+  size_t limit_switch1_idx_ = 666666;
+
+  /** Limit discovery mode methods */
+  double discover_limits__limit_reached_command(
+    const std::size_t limit_index, const double current_velocity, const double reference_velocity,
+    bool & blocked);
+
   // Record velocity sign associated with limit violated
+  double zero_velocity_tolerance_ = 1.e-3;
   double limit_switch_left_violating_velocity_sign_ = 0.0;
   double limit_switch_right_violating_velocity_sign_ = 0.0;
   bool limit_switch_left_prev_active_state_ = false;
   bool limit_switch_right_prev_active_state_ = false;
+  bool velocity_reference_cmd_is_blocked_ = false;
 
 private:
   // callback for topic interface
   SECURED_1D_VELOCITY_CONTROLLER__VISIBILITY_LOCAL
   void reference_callback(const std::shared_ptr<ControllerReferenceMsg> msg);
+
   void record_limit_switch_state(bool limit_left_active, bool limit_right_active);
+  void log_blocked_velocity_command(
+    const bool block, const double current_ref, const double current_velocity);
 };
 
 }  // namespace secured_1d_velocity_controller
