@@ -1,30 +1,100 @@
 secured_1d_velocity_controller:
-  joints:
-    {
-      type: string_array,
-      default_value: [],
-      description: "Specifies the joint used by the controller. If state joints parameter is defined, then only command joints are defined with this parameter.",
-      read_only: true,
-      validation: { unique<>: null, not_empty<>: null },
-    }
-  state_joints:
-    {
-      type: string_array,
-      default_value: [],
-      description: "(optional) Specifies joints for reading states. This parameter is only relevant when state joints are different then command joint, i.e., when a following controller is used.",
-      read_only: true,
-      validation: { unique<>: null },
-    }
-  interface_name:
+  joint:
     {
       type: string,
-      default_value: "velocity",
-      description: "Name of the interface used by the controller on joints and state_joints.",
+      description: "Name of the joint used by the controller",
       read_only: true,
-      validation:
-        {
-          not_empty<>: null,
-          one_of<>: [["velocity", "limit_switch_left", "limit_switch_right"]],
-          forbidden_interface_name_prefix: null,
-        },
+      validation: { not_empty<>: null },
     }
+  start_limit:
+    state_interface:
+      {
+        type: string,
+        default_value: "start_limit_sensor/limit_switch",
+        description: "State interface provided by the hardware responsible for the start limit sensor",
+        read_only: true,
+        validation: { not_empty<>: null },
+      }
+    active_value:
+      {
+        type: double,
+        default_value: 1.0,
+        description: "Value of the state interface when the start limit sensor is active",
+        read_only: true,
+        validation: { "secured_1d_velocity_controller::is_finite": null },
+      }
+  end_limit:
+    state_interface:
+      {
+        type: string,
+        default_value: "end_limit_sensor/limit_switch",
+        description: "State interface provided by the hardware responsible for the end limit sensor",
+        read_only: true,
+        validation: { not_empty<>: null },
+      }
+    active_value:
+      {
+        type: double,
+        default_value: 1.0,
+        description: "Value of the state interface when the end limit sensor is active",
+        read_only: true,
+        validation: { "secured_1d_velocity_controller::is_finite": null },
+      }
+  reference_topic:
+    {
+      type: string,
+      default_value: "reference_velocity",
+      description: "Name of the topic used to receive reference commands",
+      read_only: true,
+      validation: { not_empty<>: null },
+    }
+  zero_velocity_tolerance:
+    {
+      type: double,
+      default_value: 1.e-6,
+      description: "Tolerance used to consider the velocity command as zero",
+      read_only: true,
+      validation: { gt<>: 0.0 },
+    }
+  security_mode_service:
+    default_mode:
+      {
+        type: string,
+        default_value: "SECURE",
+        description: "Default mode used by the controller. Available modes are:
+          1. SECURE,
+          2. INSECURE
+          The SECURE mode is used to activate the security limits.
+          The INSECURE mode is used to deactivate the security limits, be very careful when using this mode.",
+        read_only: true,
+        validation: { one_of<>: [["SECURE", "INSECURE"]] },
+      }
+    service:
+      {
+        type: string,
+        default_value: "set_secure_mode",
+        description: "Name of the service used to activate or deactivate security limit",
+        read_only: true,
+        validation: {},
+      }
+  log_mode_service:
+    default_mode:
+      {
+        type: string,
+        default_value: "NO_LOG",
+        description:
+          "Default log mode used by the controller. Available modes are:
+          1. NO_LOG,
+          2. LOG,
+          The LOG mode is used to log the security limit activation and deactivation.",
+        read_only: true,
+        validation: { one_of<>: [["NO_LOG", "LOG"]] },
+      }
+    service:
+      {
+        type: string,
+        default_value: "set_secure_mode",
+        description: "Name of the service used to activate or deactivate security limit",
+        read_only: true,
+        validation: {},
+      }

@@ -16,24 +16,28 @@
 #ifndef SECURED_1D_VELOCITY_CONTROLLER__VALIDATE_SECURED_1D_VELOCITY_CONTROLLER_PARAMETERS_HPP_
 #define SECURED_1D_VELOCITY_CONTROLLER__VALIDATE_SECURED_1D_VELOCITY_CONTROLLER_PARAMETERS_HPP_
 
+#include <fmt/core.h>
 #include <string>
 
-#include "parameter_traits/parameter_traits.hpp"
+#include <tl_expected/expected.hpp>
 
-namespace parameter_traits
-{
-Result forbidden_interface_name_prefix(rclcpp::Parameter const & parameter)
-{
-  auto const & interface_name = parameter.as_string();
+#include <rclcpp/rclcpp.hpp>
 
-  if (interface_name.rfind("blup_", 0) == 0)
+namespace secured_1d_velocity_controller
+{
+
+tl::expected<void, std::string> is_finite(rclcpp::Parameter const & parameter)
+{
+  double param_value = parameter.as_double();
+  if (!std::isfinite(param_value))
   {
-    return ERROR("'interface_name' parameter can not start with 'blup_'");
+    return tl::make_unexpected(fmt::format(
+      "Invalid value {} for parameter {}. Expected a finite value.", param_value,
+      parameter.get_name()));
   }
-
-  return OK;
+  return {};  // OK
 }
 
-}  // namespace parameter_traits
+}  // namespace secured_1d_velocity_controller
 
 #endif  // SECURED_1D_VELOCITY_CONTROLLER__VALIDATE_SECURED_1D_VELOCITY_CONTROLLER_PARAMETERS_HPP_

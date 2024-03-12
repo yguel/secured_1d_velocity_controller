@@ -56,8 +56,8 @@ install(
   DESTINATION include/${PROJECT_NAME}
 )
 
-#if(BUILD_TESTING)
-if(FALSE)
+if(BUILD_TESTING)
+#if(FALSE)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
   # comment the line when a copyright and license is added to all source files
@@ -80,7 +80,11 @@ if(FALSE)
     ros2_control_test_assets
   )
 
-  add_rostest_with_parameters_gmock(test_secured_1d_velocity_controller test/test_secured_1d_velocity_controller.cpp ${CMAKE_CURRENT_SOURCE_DIR}/test/secured_1d_velocity_controller_params.yaml)
+  add_rostest_with_parameters_gmock(test_secured_1d_velocity_controller \
+  test/test_secured_1d_velocity_controller.cpp \
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/secured_1d_velocity_controller_params.yaml
+  )
+
   target_include_directories(test_secured_1d_velocity_controller PRIVATE include)
   target_link_libraries(test_secured_1d_velocity_controller secured_1d_velocity_controller)
   ament_target_dependencies(
@@ -89,7 +93,11 @@ if(FALSE)
     hardware_interface
   )
 
-  add_rostest_with_parameters_gmock(test_secured_1d_velocity_controller_preceeding test/test_secured_1d_velocity_controller_preceeding.cpp ${CMAKE_CURRENT_SOURCE_DIR}/test/secured_1d_velocity_controller_preceeding_params.yaml)
+  add_rostest_with_parameters_gmock(test_secured_1d_velocity_controller_preceeding \
+  test/test_secured_1d_velocity_controller_preceeding.cpp \
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/secured_1d_velocity_controller_preceeding_params.yaml
+  )
+
   target_include_directories(test_secured_1d_velocity_controller_preceeding PRIVATE include)
   target_link_libraries(test_secured_1d_velocity_controller_preceeding secured_1d_velocity_controller)
   ament_target_dependencies(

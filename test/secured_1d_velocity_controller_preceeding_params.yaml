@@ -1,9 +1,17 @@
 test_secured_1d_velocity_controller:
   ros__parameters:
-    joints:
+    joint:
       - joint1
-
-    interface_name: acceleration
-
-    state_joints:
-      - joint1state
+    start_limit:
+      state_interface_name: start_limit_sensor/limit_switch
+      active_value: 1.0
+    end_limit:
+      state_interface_name: end_limit_sensor/limit_switch
+      active_value: 1.0
+    reference_topic: reference_velocity
+    security_mode_service:
+      default_mode: SECURE
+      service: set_secure_mode
+    log_mode_service:
+      default_mode: NO_LOG
+      service: set_log_mode

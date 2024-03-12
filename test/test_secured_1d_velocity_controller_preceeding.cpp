@@ -21,9 +21,11 @@
 #include <utility>
 #include <vector>
 
-using secured_1d_velocity_controller::CMD_MY_ITFS;
+using secured_1d_velocity_controller::CMD_V_ITFS;
 using secured_1d_velocity_controller::control_mode_type;
-using secured_1d_velocity_controller::STATE_MY_ITFS;
+using secured_1d_velocity_controller::STATE_END_LIMIT_ITFS;
+using secured_1d_velocity_controller::STATE_START_LIMIT_ITFS;
+using secured_1d_velocity_controller::STATE_V_ITFS;
 
 class Secured1dVelocityControllerTest
 : public Secured1dVelocityControllerFixture<TestableSecured1dVelocityController>
@@ -34,16 +36,41 @@ TEST_F(Secured1dVelocityControllerTest, all_parameters_set_configure_success)
 {
   SetUpController();
 
-  ASSERT_TRUE(controller_->params_.joints.empty());
-  ASSERT_TRUE(controller_->params_.state_joints.empty());
-  ASSERT_TRUE(controller_->params_.interface_name.empty());
+  // Check parameters
+  ASSERT_EQ(controller_->params_.joint, std::string(""));
+  ASSERT_EQ(controller_->params_.start_limit.state_interface, std::string(""));
+  ASSERT_EQ(controller_->params_.end_limit.state_interface, std::string(""));
+  ASSERT_EQ(controller_->params_.reference_topic, std::string(""));
+  ASSERT_EQ(controller_->params_.security_mode_service.default_mode, std::string(""));
+  ASSERT_EQ(controller_->params_.security_mode_service.service, std::string(""));
+  ASSERT_EQ(controller_->params_.log_mode_service.default_mode, std::string(""));
+  ASSERT_EQ(controller_->params_.log_mode_service.service, std::string(""));
 
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
 
-  ASSERT_THAT(controller_->params_.joints, testing::ElementsAreArray(joint_names_));
-  ASSERT_THAT(controller_->params_.state_joints, testing::ElementsAreArray(state_joint_names_));
-  ASSERT_THAT(controller_->state_joints_, testing::ElementsAreArray(state_joint_names_));
-  ASSERT_EQ(controller_->params_.interface_name, interface_name_);
+  // Check parameters
+  ASSERT_EQ(controller_->params_.joint, joint_name_);
+
+  ASSERT_EQ(
+    controller_->params_.start_limit.state_interface,
+    state_base_names_[STATE_START_LIMIT_ITFS] + std::string("/") +
+      state_interface_names_[STATE_START_LIMIT_ITFS]);
+  ASSERT_EQ(controller_->params_.start_limit.active_value, start_limit_active_value_);
+
+  ASSERT_EQ(
+    controller_->params_.end_limit.state_interface, state_base_names_[STATE_END_LIMIT_ITFS] +
+                                                      std::string("/") +
+                                                      state_interface_names_[STATE_END_LIMIT_ITFS]);
+  ASSERT_EQ(controller_->params_.end_limit.active_value, end_limit_active_value_);
+
+  ASSERT_EQ(controller_->params_.reference_topic, reference_topic_);
+
+  ASSERT_EQ(
+    controller_->params_.security_mode_service.default_mode, security_service_default_mode_);
+  ASSERT_EQ(controller_->params_.security_mode_service.service, security_service_name_);
+
+  ASSERT_EQ(controller_->params_.log_mode_service.default_mode, log_service_default_mode_);
+  ASSERT_EQ(controller_->params_.log_mode_service.service, log_service_name_);
 }
 
 TEST_F(Secured1dVelocityControllerTest, check_exported_intefaces)
@@ -53,17 +80,17 @@ TEST_F(Secured1dVelocityControllerTest, check_exported_intefaces)
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
 
   auto command_intefaces = controller_->command_interface_configuration();
-  ASSERT_EQ(command_intefaces.names.size(), joint_command_values_.size());
+  ASSERT_EQ(command_intefaces.names.size(), reference_command_values_.size());
   for (size_t i = 0; i < command_intefaces.names.size(); ++i)
   {
-    EXPECT_EQ(command_intefaces.names[i], joint_names_[i] + "/" + interface_name_);
+    EXPECT_EQ(command_intefaces.names[i], joint_name_ + "/" + hardware_interface::HW_IF_VELOCITY);
   }
 
   auto state_intefaces = controller_->state_interface_configuration();
-  ASSERT_EQ(state_intefaces.names.size(), joint_state_values_.size());
+  ASSERT_EQ(state_intefaces.names.size(), state_values_.size());
   for (size_t i = 0; i < state_intefaces.names.size(); ++i)
   {
-    EXPECT_EQ(state_intefaces.names[i], state_joint_names_[i] + "/" + interface_name_);
+    EXPECT_EQ(state_intefaces.names[i], state_base_names_[i] + "/" + state_interface_names_[i]);
   }
 }
 

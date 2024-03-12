@@ -16,6 +16,7 @@
 #ifndef SECURED_1D_VELOCITY_CONTROLLER__SECURED_1D_VELOCITY_CONTROLLER_HPP_
 #define SECURED_1D_VELOCITY_CONTROLLER__SECURED_1D_VELOCITY_CONTROLLER_HPP_
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -34,148 +35,25 @@
 namespace secured_1d_velocity_controller
 {
 
+// Number of state interfaces
+static constexpr size_t STATE_INTERFACES = 3;
+
+// name constants for state interfaces
+static constexpr size_t STATE_V_ITFS = 0;
+static constexpr size_t STATE_START_LIMIT_ITFS = 1;
+static constexpr size_t STATE_END_LIMIT_ITFS = 2;
+
+// name constants for command interfaces
+static constexpr size_t CMD_V_ITFS = 0;
+
 // Velocity Sign Security Specification Mode
 enum class control_mode_type : std::uint8_t
 {
-  UNKNWON = 0,
-  LIMITS_DISCOVERY = 1,
-  LIMITS_DISCOVERED = 2,
-  CALIBRATED = 3
-};
-
-/**
- * LimitDiscoveryState is a structure that holds the state of the
- * limit discovery process.
- */
-struct LimitDiscoveryState
-{
-  bool start_discovered = false;
-  std::size_t start_idx = 666666;
-  bool end_discovered = false;
-  std::size_t end_idx = 666666;
-
-public:
-  inline bool discovery_is_done() const { return start_discovered && end_discovered; }
-  inline bool limit_known(const std::size_t limit_index) const
-  {
-    if (start_discovered && limit_index == start_idx)
-    {
-      return true;
-    }
-    if (end_discovered && limit_index == end_idx)
-    {
-      return true;
-    }
-    return false;
-  }
-};
-
-/**
- * LimitMapping stores the respective position of the limit switches
- * with respect to the joint displacement direction.
- * The start limit is the limit switch that is reached when the joint
- * moves in the negative direction (backward).
- * The end limit is the limit switch that is reached when the joint
- * moves in the positive direction (forward).
- */
-struct LimitMapping
-{
-public:
-  /* Map interface indices to limit positions */
-  std::size_t start_siidx;  //< start limit state_interface index;
-  std::size_t end_siidx;    //< end limit state_interface index;
-
-public:
-  /* Map interface names to limit positions */
-  std::string joint_name;
-  std::string start_limit;
-  std::string end_limit;
-
-public:
-  inline double admissible_velocity(
-    const std::size_t limit_switch, const double reference_velocity, bool & blocked) const
-  {
-    if (limit_switch == start_siidx)
-    {
-      if (reference_velocity < 0.0)
-      {
-        blocked = true;
-        return 0.0;
-      }
-    }
-    else if (limit_switch == end_siidx)
-    {
-      if (reference_velocity > 0.0)
-      {
-        blocked = true;
-        return 0.0;
-      }
-    }
-    blocked = false;
-    return reference_velocity;
-  }
-
-  inline double admissible_velocity(
-    const std::size_t limit_switch, const double reference_velocity) const
-  {
-    if (limit_switch == start_siidx)
-    {
-      if (reference_velocity < 0.0)
-      {
-        return 0.0;
-      }
-    }
-    else if (limit_switch == end_siidx)
-    {
-      if (reference_velocity > 0.0)
-      {
-        return 0.0;
-      }
-    }
-    return reference_velocity;
-  }
-
-public:
-  inline LimitMapping() = default;
-
-  inline LimitMapping(
-    const std::string & joint_name, const std::string & start_limit, const std::string & end_limit,
-    const std::size_t start_siidx, const std::size_t end_siidx)
-  : start_siidx(start_siidx),
-    end_siidx(end_siidx),
-    joint_name(joint_name),
-    start_limit(start_limit),
-    end_limit(end_limit)
-  {
-  }
-
-  inline LimitMapping(const LimitMapping & other)
-  : start_siidx(other.start_siidx),
-    end_siidx(other.end_siidx),
-    joint_name(other.joint_name),
-    start_limit(other.start_limit),
-    end_limit(other.end_limit)
-  {
-  }
-
-  inline LimitMapping & operator=(const LimitMapping & other)
-  {
-    start_siidx = other.start_siidx;
-    end_siidx = other.end_siidx;
-    joint_name = other.joint_name;
-    start_limit = other.start_limit;
-    end_limit = other.end_limit;
-    return *this;
-  }
-
-  inline bool operator==(const LimitMapping & other) const
-  {
-    return start_siidx == other.start_siidx && end_siidx == other.end_siidx &&
-           joint_name == other.joint_name && start_limit == other.start_limit &&
-           end_limit == other.end_limit;
-  }
-
-  inline bool operator!=(const LimitMapping & other) const { return !(*this == other); }
+  UNKNOWN = 0,
+  SECURE = 1,
+  INSECURE = 2,
+  SECURE_AND_LOG = 3,
+  INSECURE_AND_LOG = 4
 };
 
 class Secured1dVelocityController : public controller_interface::ControllerInterface
@@ -211,6 +89,8 @@ public:
 
   // Command reference message type definition
   using ControllerReferenceMsg = std_msgs::msg::Float64;
+  // Service message type definition
+  using ControllerModeSrvType = std_srvs::srv::SetBool;
   // State message type definition
   using ControllerStateMsg = control_msgs::msg::JointControllerState;
 
@@ -218,15 +98,18 @@ protected:
   std::shared_ptr<secured_1d_velocity_controller::ParamListener> param_listener_;
   secured_1d_velocity_controller::Params params_;
 
-  std::vector<std::string> state_joints_;
+  std::string secured_joint_;
+  double start_active_value_ = std::numeric_limits<double>::quiet_NaN();
+  double end_active_value_ = std::numeric_limits<double>::quiet_NaN();
+  double zero_velocity_tolerance_ = std::numeric_limits<double>::quiet_NaN();
 
   // Reference command subscribers and Controller State publisher
   rclcpp::Subscription<ControllerReferenceMsg>::SharedPtr ref_subscriber_ = nullptr;
   realtime_tools::RealtimeBuffer<std::shared_ptr<ControllerReferenceMsg>> input_ref_;
 
-  /**
-  rclcpp::Service<ControllerModeSrvType>::SharedPtr set_velocity_sign_security_mode_service_;
-  */
+  // Service responsible for the setup of the control mode
+  rclcpp::Service<ControllerModeSrvType>::SharedPtr set_secure_;
+  rclcpp::Service<ControllerModeSrvType>::SharedPtr set_log_;
   realtime_tools::RealtimeBuffer<control_mode_type> control_mode_;
 
   using ControllerStatePublisher = realtime_tools::RealtimePublisher<ControllerStateMsg>;
@@ -235,32 +118,76 @@ protected:
   std::unique_ptr<ControllerStatePublisher> state_publisher_;
 
 protected:
-  LimitDiscoveryState discovery_state_;
-  LimitMapping limit_map_;
-  size_t limit_switch0_idx_ = 666666;
-  size_t limit_switch1_idx_ = 666666;
-
-  /** Limit discovery mode methods */
-  double discover_limits__limit_reached_command(
-    const std::size_t limit_index, const double current_velocity, const double reference_velocity,
-    bool & blocked);
-
-  // Record velocity sign associated with limit violated
-  double zero_velocity_tolerance_ = 1.e-3;
-  double limit_switch_left_violating_velocity_sign_ = 0.0;
-  double limit_switch_right_violating_velocity_sign_ = 0.0;
-  bool limit_switch_left_prev_active_state_ = false;
-  bool limit_switch_right_prev_active_state_ = false;
+  inline double admissible_velocity(
+    bool start_limit_active, bool end_limit_active, const double reference_velocity) const
+  {
+    if (start_limit_active && reference_velocity < 0.0)
+    {
+      return 0.0;
+    }
+    if (end_limit_active && reference_velocity > 0.0)
+    {
+      return 0.0;
+    }
+    return reference_velocity;
+  }
+  inline double admissible_velocity_log(
+    bool start_limit_active, bool end_limit_active, const double reference_velocity,
+    bool & blocked) const
+  {
+    if (start_limit_active && reference_velocity < 0.0)
+    {
+      blocked = true;
+      return 0.0;
+    }
+    if (end_limit_active && reference_velocity > 0.0)
+    {
+      blocked = true;
+      return 0.0;
+    }
+    blocked = false;
+    return reference_velocity;
+  }
   bool velocity_reference_cmd_is_blocked_ = false;
+
+protected:
+  // Log variables
+  bool start_limit_switch_prev_active_state_ = false;
+  bool end_limit_switch_prev_active_state_ = false;
+  std::string log_prefix_;
+
+protected:
+  // update method pointer
+  controller_interface::return_type (Secured1dVelocityController::*update_method_ptr_)(
+    const double reference_velocity, const double current_velocity, const bool start_limit_active,
+    const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
+
+  // update methods
+  controller_interface::return_type update_secure(
+    const double reference_velocity, const double current_velocity, const bool start_limit_active,
+    const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
+  controller_interface::return_type update_insecure(
+    const double reference_velocity, const double current_velocity, const bool start_limit_active,
+    const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
+  controller_interface::return_type update_secure_and_log(
+    const double reference_velocity, const double current_velocity, const bool start_limit_active,
+    const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
+  controller_interface::return_type update_insecure_and_log(
+    const double reference_velocity, const double current_velocity, const bool start_limit_active,
+    const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
+
+  // Log methods
+  void record_limit_switch_state(bool limit_left_active, bool limit_right_active);
+  void log_blocked_velocity_command(
+    const bool block, const double current_ref, const double current_velocity);
+
+protected:
+  void set_control_mode(const control_mode_type mode);
 
 private:
   // callback for topic interface
   SECURED_1D_VELOCITY_CONTROLLER__VISIBILITY_LOCAL
   void reference_callback(const std::shared_ptr<ControllerReferenceMsg> msg);
-
-  void record_limit_switch_state(bool limit_left_active, bool limit_right_active);
-  void log_blocked_velocity_command(
-    const bool block, const double current_ref, const double current_velocity);
 };
 
 }  // namespace secured_1d_velocity_controller

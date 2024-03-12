@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TEMPLATES__ROS2_CONTROL__CONTROLLER__TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
-#define TEMPLATES__ROS2_CONTROL__CONTROLLER__TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
+#ifndef TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
+#define TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
 
 #include <chrono>
 #include <limits>
@@ -28,19 +28,20 @@
 #include "hardware_interface/loaned_command_interface.hpp"
 #include "hardware_interface/loaned_state_interface.hpp"
 #include "hardware_interface/types/hardware_interface_return_values.hpp"
+#include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/parameter_value.hpp"
 #include "rclcpp/time.hpp"
 #include "rclcpp/utilities.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "secured_1d_velocity_controller/secured_1d_velocity_controller.hpp"
 
-// TODO(anyone): replace the state and command message types
 using ControllerStateMsg =
   secured_1d_velocity_controller::Secured1dVelocityController::ControllerStateMsg;
 using ControllerReferenceMsg =
   secured_1d_velocity_controller::Secured1dVelocityController::ControllerReferenceMsg;
 using ControllerModeSrvType =
   secured_1d_velocity_controller::Secured1dVelocityController::ControllerModeSrvType;
+using control_mode_type = secured_1d_velocity_controller::control_mode_type;
 
 namespace
 {
@@ -55,9 +56,6 @@ class TestableSecured1dVelocityController
   FRIEND_TEST(Secured1dVelocityControllerTest, all_parameters_set_configure_success);
   FRIEND_TEST(Secured1dVelocityControllerTest, activate_success);
   FRIEND_TEST(Secured1dVelocityControllerTest, reactivate_success);
-  FRIEND_TEST(Secured1dVelocityControllerTest, test_setting_slow_mode_service);
-  FRIEND_TEST(Secured1dVelocityControllerTest, test_update_logic_fast);
-  FRIEND_TEST(Secured1dVelocityControllerTest, test_update_logic_slow);
 
 public:
   controller_interface::CallbackReturn on_configure(
@@ -99,8 +97,6 @@ public:
     return wait_for_command(executor, ref_subscriber_wait_set_, timeout);
   }
 
-  // TODO(anyone): add implementation of any methods of your controller is needed
-
 private:
   rclcpp::WaitSet ref_subscriber_wait_set_;
 };
@@ -117,13 +113,22 @@ public:
     // initialize controller
     controller_ = std::make_unique<CtrlType>();
 
-    command_publisher_node_ = std::make_shared<rclcpp::Node>("command_publisher");
-    command_publisher_ = command_publisher_node_->create_publisher<ControllerReferenceMsg>(
-      "/test_secured_1d_velocity_controller/commands", rclcpp::SystemDefaultsQoS());
+    std::string base_name = "/test_secured_1d_velocity_controller/";
 
-    service_caller_node_ = std::make_shared<rclcpp::Node>("service_caller");
-    slow_control_service_client_ = service_caller_node_->create_client<ControllerModeSrvType>(
-      "/test_secured_1d_velocity_controller/set_slow_control_mode");
+    std::string ref_topic = base_name + reference_topic_;
+    command_publisher_node_ = std::make_shared<rclcpp::Node>("reference_command_publisher");
+    command_publisher_ = command_publisher_node_->create_publisher<ControllerReferenceMsg>(
+      ref_topic, rclcpp::SystemDefaultsQoS());
+
+    std::string security_service = base_name + security_service_name_;
+    security_service_caller_node_ = std::make_shared<rclcpp::Node>("security_service_caller");
+    security_service_client_ =
+      security_service_caller_node_->create_client<ControllerModeSrvType>(security_service);
+
+    std::string log_service = base_name + log_service_name_;
+    log_service_caller_node_ = std::make_shared<rclcpp::Node>("security_service_caller");
+    log_service_client_ =
+      log_service_caller_node_->create_client<ControllerModeSrvType>(log_service);
   }
 
   static void TearDownTestCase() {}
@@ -136,28 +141,25 @@ protected:
     ASSERT_EQ(controller_->init(controller_name), controller_interface::return_type::OK);
 
     std::vector<hardware_interface::LoanedCommandInterface> command_ifs;
-    command_itfs_.reserve(joint_command_values_.size());
-    command_ifs.reserve(joint_command_values_.size());
+    command_itfs_.reserve(reference_command_values_.size());
+    command_ifs.reserve(reference_command_values_.size());
 
-    for (size_t i = 0; i < joint_command_values_.size(); ++i)
-    {
+    {  // One joint, one command interface
       command_itfs_.emplace_back(hardware_interface::CommandInterface(
-        joint_names_[i], interface_name_, &joint_command_values_[i]));
+        joint_name_, hardware_interface::HW_IF_VELOCITY, &reference_command_values_[0]));
       command_ifs.emplace_back(command_itfs_.back());
     }
-    // TODO(anyone): Add other command interfaces, if any
 
     std::vector<hardware_interface::LoanedStateInterface> state_ifs;
-    state_itfs_.reserve(joint_state_values_.size());
-    state_ifs.reserve(joint_state_values_.size());
+    state_itfs_.reserve(state_values_.size());
+    state_ifs.reserve(state_values_.size());
 
-    for (size_t i = 0; i < joint_state_values_.size(); ++i)
+    for (size_t i = 0; i < state_values_.size(); ++i)
     {
       state_itfs_.emplace_back(hardware_interface::StateInterface(
-        joint_names_[i], interface_name_, &joint_state_values_[i]));
+        state_base_names_[i], state_interface_names_[i], &state_values_[i]));
       state_ifs.emplace_back(state_itfs_.back());
     }
-    // TODO(anyone): Add other state interfaces, if any
 
     controller_->assign_interfaces(std::move(command_ifs), std::move(state_ifs));
   }
@@ -197,10 +199,7 @@ protected:
     ASSERT_TRUE(subscription->take(msg, msg_info));
   }
 
-  // TODO(anyone): add/remove arguments as it suites your command message type
-  void publish_commands(
-    const std::vector<double> & displacements = {0.45},
-    const std::vector<double> & velocities = {0.0}, const double duration = 1.25)
+  void publish_commands(const double & velocity = 0.0)
   {
     auto wait_for_topic = [&](const auto topic_name)
     {
@@ -221,42 +220,71 @@ protected:
     wait_for_topic(command_publisher_->get_topic_name());
 
     ControllerReferenceMsg msg;
-    msg.joint_names = joint_names_;
-    msg.displacements = displacements;
-    msg.velocities = velocities;
-    msg.duration = duration;
+    msg.data = velocity;
 
     command_publisher_->publish(msg);
   }
 
-  std::shared_ptr<ControllerModeSrvType::Response> call_service(
-    const bool slow_control, rclcpp::Executor & executor)
+  std::shared_ptr<ControllerModeSrvType::Response> call_security_service(
+    const bool set_secure, rclcpp::Executor & executor)
   {
     auto request = std::make_shared<ControllerModeSrvType::Request>();
-    request->data = slow_control;
+    request->data = set_secure;
 
     bool wait_for_service_ret =
-      slow_control_service_client_->wait_for_service(std::chrono::milliseconds(500));
+      security_service_client_->wait_for_service(std::chrono::milliseconds(500));
     EXPECT_TRUE(wait_for_service_ret);
     if (!wait_for_service_ret)
     {
-      throw std::runtime_error("Services is not available!");
+      throw std::runtime_error("Security mode service is not available!");
     }
-    auto result = slow_control_service_client_->async_send_request(request);
+    auto result = security_service_client_->async_send_request(request);
+    EXPECT_EQ(executor.spin_until_future_complete(result), rclcpp::FutureReturnCode::SUCCESS);
+
+    return result.get();
+  }
+
+  std::shared_ptr<ControllerModeSrvType::Response> call_log_service(
+    const bool set_log, rclcpp::Executor & executor)
+  {
+    auto request = std::make_shared<ControllerModeSrvType::Request>();
+    request->data = set_log;
+
+    bool wait_for_service_ret =
+      log_service_client_->wait_for_service(std::chrono::milliseconds(500));
+    EXPECT_TRUE(wait_for_service_ret);
+    if (!wait_for_service_ret)
+    {
+      throw std::runtime_error("Log mode service is not available!");
+    }
+    auto result = log_service_client_->async_send_request(request);
     EXPECT_EQ(executor.spin_until_future_complete(result), rclcpp::FutureReturnCode::SUCCESS);
 
     return result.get();
   }
 
 protected:
-  // TODO(anyone): adjust the members as needed
-
   // Controller-related parameters
-  std::vector<std::string> joint_names_ = {"joint1"};
-  std::vector<std::string> state_joint_names_ = {"joint1state"};
-  std::string interface_name_ = "acceleration";
-  std::array<double, 1> joint_state_values_ = {1.1};
-  std::array<double, 1> joint_command_values_ = {101.101};
+  std::string joint_name_ = "joint1";
+  std::vector<std::string> state_base_names_ = {"joint1", "start_limit_sensor", "end_limit_sensor"};
+  std::vector<std::string> state_interface_names_ = {"velocity", "limit_switch", "limit_switch"};
+  double start_limit_active_value_ = 1.0;
+  double end_limit_active_value_ = 1.0;
+  double reset_velocity_ = 0.0;
+  std::string reference_topic_ = "reference_velocity";
+  std::string security_service_default_mode_ = "SECURE";
+  std::string security_service_name_ = "set_security_mode";
+  std::string log_service_default_mode_ = "NO_LOG";
+  std::string log_service_name_ = "set_log_mode";
+
+  std::array<double, 3> state_values_ = {0., 0., 0.};         // velocity, start_limit, end_limit
+  std::array<double, 3> state_values_ok_ = {2.5, 0., 0.};     // velocity, start_limit, end_limit
+  std::array<double, 3> state_values_start_ = {1.5, 1., 0.};  // velocity, start_limit, end_limit
+  std::array<double, 3> state_values_end_ = {-1.5, 0., 1.};   // velocity, start_limit, end_limit
+  std::array<double, 3> state_values_both_ = {3.5, 1., 1.};   // velocity, start_limit,
+  std::array<double, 1> reference_command_values_ = {1.};
+  std::array<double, 1> reference_value_pos_ = {1.8};
+  std::array<double, 1> reference_value_neg_ = {-1.8};
 
   std::vector<hardware_interface::StateInterface> state_itfs_;
   std::vector<hardware_interface::CommandInterface> command_itfs_;
@@ -265,8 +293,10 @@ protected:
   std::unique_ptr<TestableSecured1dVelocityController> controller_;
   rclcpp::Node::SharedPtr command_publisher_node_;
   rclcpp::Publisher<ControllerReferenceMsg>::SharedPtr command_publisher_;
-  rclcpp::Node::SharedPtr service_caller_node_;
-  rclcpp::Client<ControllerModeSrvType>::SharedPtr slow_control_service_client_;
+  rclcpp::Node::SharedPtr security_service_caller_node_;
+  rclcpp::Client<ControllerModeSrvType>::SharedPtr security_service_client_;
+  rclcpp::Node::SharedPtr log_service_caller_node_;
+  rclcpp::Client<ControllerModeSrvType>::SharedPtr log_service_client_;
 };
 
-#endif  // TEMPLATES__ROS2_CONTROL__CONTROLLER__TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
+#endif  // TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
