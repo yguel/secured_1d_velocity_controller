@@ -1,8 +1,8 @@
 ..
   secured_1d_velocity_controller documentation master file
 
-Welcome to secured_1d_velocity_controller's documentation!
-==========================================================
+Documentation for secure 1d controllers for ROS2 control
+========================================================
 
 .. toctree::
    :maxdepth: 2
@@ -58,7 +58,18 @@ The information we need to configure the security parameters are:
 3. the state interface name of the velocity
 4. the command interface name of the velocity
 
-.. literalinclude:: configuration_file_for_secured_1d_velocity_controller.yaml
+.. mdinclude:: secured_1d_velocity_controller_parameters.md
+
+
+Example of a configuration file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: secured_1d_velocity_controller_params.yaml
    :language: yaml
-   :caption: Limit specifications language for yaml configuration files
+   :caption: Example of a yaml configuration file for the secured 1d velocity controller
    :linenos:
+
+.. .. literalinclude:: configuration_file_for_secured_1d_velocity_controller.yaml
+..    :language: yaml
+..    :caption: Specifications language for yaml configuration files for the secured 1d velocity controller
+..    :linenos:

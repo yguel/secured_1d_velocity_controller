@@ -1,0 +1,118 @@
+VERSION 0.8
+# Documentation checks and build instructions for CI/CD
+
+# The docker image the build will run in
+FROM ubuntu:latest
+WORKDIR /earthly_workdir
+
+ARG --global python = python3.10
+ARG --global GENERATE_PARAMETER_LIBRARY_IS_USED = true
+ARG --global ROS_DOCKER_TAG = humble-ros-base-jammy
+ARG --global EARTHLY_GIT_PROJECT_NAME
+ARG --global CTRLER_NAME
+ARG --global PARAM_FILE_DECLARATION = $CTRLER_NAME".yaml"
+ARG --global PARAM_FILE_DOC = $CTRLER_NAME"_parameters.md"
+
+doc-files:
+    FROM ../.+build-image
+    # Get the code of the project to document
+    COPY --dir (../.+sources/*) .
+    COPY --dir (../.+top-doc-sources/*) .
+    COPY --dir (../.+test-sources/*) .
+    RUN --no-cache mkdir -p docs
+    # Get the sources of the project documentation
+    #  Beware any symbolic link outside the Earthfile directory should be handled specifically
+    COPY --dir --if-exists _static docs/
+    COPY --dir --if-exists _templates docs/
+    COPY --dir conf.py Makefile make.bat requirements.txt *.rst docs/
+    SAVE ARTIFACT ./docs ./
+
+doc-deps:
+    FROM +doc-files
+    # Install the dependencies for the documentation build
+    RUN apt-get update -y -qq
+    RUN apt-get install -y -qq python3-sphinx doxygen graphviz plantuml
+    RUN $python -m pip install pipenv
+
+doc-build:
+    ARG PARAM_FILE_DECLARATION_IN_DOC="configuration_file_for_"$CTRLER_NAME".yaml"
+    ARG PARAM_FILE_EXAMPLE=$CTRLER_NAME"_params.yaml"
+    FROM +doc-deps
+    COPY --dir (+doc-files/docs) .
+    IF [ "$GENERATE_PARAMETER_LIBRARY_IS_USED" = "true" ]
+        RUN cd ./docs && \
+            ln -s ../src/$PARAM_FILE_DECLARATION $PARAM_FILE_DECLARATION_IN_DOC && \
+            ln -s ../test/$PARAM_FILE_EXAMPLE && \
+            cd ..
+
+        # Generate markdown for the parameter file
+        LET GEN_MD_CMD="source /opt/ros/$ROS_DISTRO/setup.bash && "\
+        "cd ./docs && " \
+        "generate_parameter_library_markdown --input_yaml  "$PARAM_FILE_DECLARATION_IN_DOC" --output_markdown_file "$PARAM_FILE_DOC " && "\
+        "cd .."
+        RUN bash -c "$GEN_MD_CMD"
+    END
+    RUN --no-cache cd ./docs && \
+        pipenv install && \
+        pipenv run make html && \
+        exit && \
+        cd ..
+    # RUN --no-cache cd ./docs/_build/html && \
+    #     echo "CONTENT of _build/html folder" && \
+    #     echo "=============================" && \
+    #     echo "ls "$(pwd) && \
+    #     echo $(ls) && \
+    #     cd ../../..
+    SAVE ARTIFACT ./docs/_build/html ./docs/_build/html
+
+commit-and-push-gh-pages:
+    # Commit the documentation build to the repository
+    FROM +doc-build
+    # Make sure to securely handle your GITHUB_TOKEN and REPO_URL
+    ARG PLATFORM="github"
+    ARG GIT_REPO_URL
+    ARG GIT_USER_EMAIL
+    ARG GIT_USER_NAME
+    ARG HTTPS=true
+    LET prefix="https"
+    IF [ "$HTTPS" = "false" ]
+        SET prefix="http"
+    END
+    RUN --secret TOKEN=GIT_TOKEN --no-cache printf '%s\n' "Display the URL: $prefix://x-access-token:$TOKEN@$GIT_REPO_URL"
+    #First clone gh-pages branch into gh-pages directory
+    # if the branch gh-pages exists otherwise create an orphan branch
+    RUN --secret TOKEN=GIT_TOKEN --no-cache EXIST=$(git clone --branch gh-pages $prefix"://x-access-token:"$TOKEN"@"$GIT_REPO_URL --single-branch  gh-pages && echo "YES" || echo "NO") && \
+        if [ "$EXIST"="YES" ]; \
+            then echo "Documentation branch gh-pages exists, updating it"; \
+        else \
+            echo "Documentation branch gh-pages does not exist, creating it" && \
+            git clone $prefix"://x-access-token:"$TOKEN"@"$GIT_REPO_URL gh-pages && \
+            cd gh-pages && git switch --orphan gh-pages && \
+            cd ..; \
+        fi
+    # copy the documentation files to the gh-pages directory
+    COPY --dir (+doc-build/docs/_build/html/*) gh-pages/
+    # RUN --no-cache cd gh-pages && \
+    #     echo "Display remote" && \
+    #     echo "===============" && \
+    #     printf '%s\n' "$(git remote -v)" && \
+    #     cd ..
+    # commit changes
+    RUN cd gh-pages && \
+        git config --local user.email $GIT_USER_EMAIL && \
+        git config --local user.name $GIT_USER_NAME && \
+        git add . && \
+        git commit -m "Update documentation" -a || true && \
+        cd ..
+    # push changes
+    RUN --push --secret TOKEN=GIT_TOKEN cd gh-pages && \
+        git push $prefix"://x-access-token:"$TOKEN"@"$GIT_REPO_URL gh-pages && \
+        cd ..
+    SAVE ARTIFACT ./gh-pages
+
+#For debugging
+docker-debug:
+    FROM ros:$ROS_DOCKER_TAG
+    #COPY --dir (+doc-files/*) .
+    ENTRYPOINT ["tail", "-f", "/dev/null"]
+    SAVE IMAGE sec1d_ctrl_docs_ros:latest

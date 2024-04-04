@@ -1,0 +1,10 @@
+{
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "C_Cpp.clang_format_sortIncludes": false,
+    "python.formatting.autopep8Args": [
+        "--ignore",
+        "E402"
+    ],
+    "ros.distro": "humble"
+}

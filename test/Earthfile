@@ -1,0 +1,34 @@
+VERSION 0.8
+# Documentation checks and build instructions for CI/CD
+
+# The docker image the build will run in
+FROM ubuntu:latest
+WORKDIR /earthly_workdir
+
+ARG --global python = python3.10
+
+run-tests:
+    FROM ../.+build-image
+    LET ROS2_RUN_TEST_CMD = "cd ws_ros2 && " \
+        "source /opt/ros/$ROS_DISTRO/setup.bash && " \
+        "colcon test --ctest-args tests && " \
+        "colcon test-result"
+    RUN --no-cache /bin/bash -c "$ROS2_RUN_TEST_CMD"
+    RUN mkdir -p test_results
+    # To create a failure (for testing purposes) uncomment the following line
+    #RUN cd test_results && echo "<failure et pleins de truc>" > test.xml
+    RUN cp ws_ros2/build/*/test_results/*/*.xml ./test_results/
+    #SAVE ARTIFACT test_results/* AS LOCAL ./test_results/
+
+test-results:
+    #BUILD +run-tests
+    FROM +run-tests
+    RUN mkdir -p ./.ci_cd
+    COPY --dir ../.+ci-cd-sources/.ci_cd/* ./.ci_cd/
+    RUN apt-get update -y -qq
+    RUN cd .ci_cd && \
+        $python -m pip install pipenv && \
+        pipenv install && \
+        pipenv run python fail_on_failed_tests.py ../test_results && \
+        cd --
+    SAVE ARTIFACT test_results/* AS LOCAL ./test_results/

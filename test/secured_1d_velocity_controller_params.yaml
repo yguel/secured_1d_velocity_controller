@@ -1,7 +1,6 @@
 test_secured_1d_velocity_controller:
   ros__parameters:
-    joint:
-      - joint1
+    joint: joint1
     start_limit:
       state_interface_name: start_limit_sensor/limit_switch
       active_value: 1.0

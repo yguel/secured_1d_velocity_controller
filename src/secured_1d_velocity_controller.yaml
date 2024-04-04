@@ -2,9 +2,11 @@ secured_1d_velocity_controller:
   joint:
     {
       type: string,
-      description: "Name of the joint used by the controller",
+      description: "Name of the joint used by the controller. Cannot be empty.",
       read_only: true,
-      validation: { not_empty<>: null },
+      default_value: "joint_name",
+      validation: {
+        not_empty<>: null },
     }
   start_limit:
     state_interface:

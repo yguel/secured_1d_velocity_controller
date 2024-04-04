@@ -1,0 +1,88 @@
+# ci.yml
+# This is a github workflow that uses Earthly as a multiplatform building, testing and reporting tool
+
+
+name: CI
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  Format:
+    permissions:
+      contents: read
+      packages: write
+      issues: read
+      checks: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 1
+    steps:
+      - uses: earthly/actions-setup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version: 0.8.0
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Format check
+        run: earthly --secret GIT_TOKEN=${{ secrets.GITHUB_TOKEN }} +check-format --GIT_REPO_URL="github.com/${{ github.repository }}" --HTTPS=true --PLATFORM="github"
+
+  Doc:
+    permissions:
+      contents: write
+      packages: write
+      issues: read
+      checks: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 1
+    steps:
+      - uses: earthly/actions-setup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version: 0.8.0
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish documentation
+        run: cd docs && earthly --push --secret GIT_TOKEN=${{ secrets.GITHUB_TOKEN }} +commit-and-push-gh-pages --GIT_REPO_URL="github.com/${{ github.repository }}" --HTTPS=true --PLATFORM="github" --GIT_USER_EMAIL="action@github.com" --GIT_USER_NAME="gitHub-actions[bot]" --CTRLER_NAME="secured_1d_velocity_controller"
+
+  Tests:
+    permissions:
+      contents: read
+      packages: write
+      issues: read
+      checks: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 1
+    steps:
+      - uses: earthly/actions-setup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version: 0.8.0
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run Tests
+        run: cd test && earthly --secret GIT_TOKEN=${{ secrets.GITHUB_TOKEN }} +test-results --GIT_REPO_URL="github.com/${{ github.repository }}" --PLATFORM="github" --GIT_USER_EMAIL="action@github.com" --GIT_USER_NAME="gitHub-actions[bot]" --CTRLER_NAME="secured_1d_velocity_controller" && cd --
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: test/test_results/*.xml
