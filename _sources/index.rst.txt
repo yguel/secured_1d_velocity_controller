@@ -1,8 +1,8 @@
 ..
   secured_1d_velocity_controller documentation master file
 
-Welcome to secured_1d_velocity_controller's documentation!
-==========================================================
+Documentation for secure 1d controllers for ROS2 control
+========================================================
 
 .. toctree::
    :maxdepth: 2
