@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to secured_1d_velocity_controller’s documentation! &mdash; secured_1d_velocity_controller 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=eafc0fe6" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=c2bf3912" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            secured_1d_velocity_controller
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to secured_1d_velocity_controller’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#secure-1d-velocity-controller">Secure 1D Velocity Controller</a></li>
+<li><a class="reference internal" href="#configuration-of-the-security-parameters">Configuration of the security parameters</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">secured_1d_velocity_controller</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to secured_1d_velocity_controller’s documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-secured-1d-velocity-controller-s-documentation">
+<h1>Welcome to secured_1d_velocity_controller’s documentation!<a class="headerlink" href="#welcome-to-secured-1d-velocity-controller-s-documentation" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+<section id="secure-1d-velocity-controller">
+<h1>Secure 1D Velocity Controller<a class="headerlink" href="#secure-1d-velocity-controller" title="Link to this heading"></a></h1>
+<p>We consider that the 1 degree of freedom (1D) system has at least one limit.
+Our model of 1D actioned system is that the position is increasing:</p>
+<ol class="arabic simple">
+<li><p>from the start limit to the end limit in case of 2 limits</p></li>
+<li><p>from the start limit in case of 1 limit (the end limit not being defined)</p></li>
+<li><p>to the end limit in case of 1 limit (the start limit not being defined)</p></li>
+</ol>
+<p>The velocity being the derivative of the position with respect to time, the
+sign of the velocity is positive when the motion direction is towards the end
+limit and negative when the motion direction is towards the start limit.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">limit</span></code> is also called in the literature the <code class="docutils literal notranslate"><span class="pre">negative</span> <span class="pre">limit</span></code>
+and the <code class="docutils literal notranslate"><span class="pre">end</span> <span class="pre">limit</span></code> is sometimes called the <code class="docutils literal notranslate"><span class="pre">positive</span> <span class="pre">limit</span></code>.</p>
+<p>Then the following safety rules are applied in conjunction except if specified
+otherwise:</p>
+<ol class="arabic simple">
+<li><p>The velocity is limited by the maximum velocity</p></li>
+<li><p>The acceleration is limited by the maximum acceleration</p></li>
+<li><p>The tracking error is limited by the maximum tracking error (the tracking error is the difference between the reference velocity and the actual velocity)</p></li>
+<li><p>If one limit is active, the only admissible velocities should have a direction/sign that direct the motion away from the active limit. In that case the tracking error check is not applied.</p></li>
+<li><p>If an effort sensor is available, the effort is limited by the maximum effort.</p></li>
+</ol>
+<p>It is possible to disable any of those checks, but it is necessary to do it explicitly.
+For all those checks there is a default value (very conservative).
+These values can (must) be changed by the user.
+This default behavior is here to ensure that the user is aware of the security problem and to force the user to take a decision about it.</p>
+</section>
+<section id="configuration-of-the-security-parameters">
+<h1>Configuration of the security parameters<a class="headerlink" href="#configuration-of-the-security-parameters" title="Link to this heading"></a></h1>
+<p>The security parameters are configured in the yaml configuration file.</p>
+<p>The information we need to configure the security parameters are:</p>
+<ol class="arabic simple">
+<li><p>the name of the joint for which the security parameters are configured</p></li>
+<li><p>the state interface names of the start and end limits</p></li>
+<li><p>the state interface name of the velocity</p></li>
+<li><p>the command interface name of the velocity</p></li>
+</ol>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Limit specifications language for yaml configuration files</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos">  1</span><span class="nt">secured_1d_velocity_controller</span><span class="p">:</span>
+<span class="linenos">  2</span><span class="w">  </span><span class="nt">joint</span><span class="p">:</span>
+<span class="linenos">  3</span><span class="w">    </span><span class="p p-Indicator">{</span>
+<span class="linenos">  4</span><span class="nt">      type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
+<span class="linenos">  5</span><span class="nt">      description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">joint</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">controller&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos">  6</span><span class="nt">      read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos">  7</span><span class="nt">      validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> not_empty&lt;&gt;</span><span class="p">:</span><span class="w"> </span><span class="nv">null</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos">  8</span><span class="w">    </span><span class="p p-Indicator">}</span>
+<span class="linenos">  9</span><span class="w">  </span><span class="nt">start_limit</span><span class="p">:</span>
+<span class="linenos"> 10</span><span class="w">    </span><span class="nt">state_interface</span><span class="p">:</span>
+<span class="linenos"> 11</span><span class="w">      </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 12</span><span class="nt">        type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 13</span><span class="nt">        default_value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;start_limit_sensor/limit_switch&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 14</span><span class="nt">        description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;State</span><span class="nv"> </span><span class="s">interface</span><span class="nv"> </span><span class="s">provided</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">hardware</span><span class="nv"> </span><span class="s">responsible</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">start</span><span class="nv"> </span><span class="s">limit</span><span class="nv"> </span><span class="s">sensor&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 15</span><span class="nt">        read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 16</span><span class="nt">        validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> not_empty&lt;&gt;</span><span class="p">:</span><span class="w"> </span><span class="nv">null</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos"> 17</span><span class="w">      </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 18</span><span class="w">    </span><span class="nt">active_value</span><span class="p">:</span>
+<span class="linenos"> 19</span><span class="w">      </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 20</span><span class="nt">        type</span><span class="p">:</span><span class="w"> </span><span class="nv">double</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 21</span><span class="nt">        default_value</span><span class="p">:</span><span class="w"> </span><span class="nv">1.0</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 22</span><span class="nt">        description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Value</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">state</span><span class="nv"> </span><span class="s">interface</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">start</span><span class="nv"> </span><span class="s">limit</span><span class="nv"> </span><span class="s">sensor</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">active&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 23</span><span class="nt">        read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 24</span><span class="nt">        validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"> </span><span class="s">&quot;secured_1d_velocity_controller::is_finite&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="nv">null</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos"> 25</span><span class="w">      </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 26</span><span class="w">  </span><span class="nt">end_limit</span><span class="p">:</span>
+<span class="linenos"> 27</span><span class="w">    </span><span class="nt">state_interface</span><span class="p">:</span>
+<span class="linenos"> 28</span><span class="w">      </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 29</span><span class="nt">        type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 30</span><span class="nt">        default_value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;end_limit_sensor/limit_switch&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 31</span><span class="nt">        description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;State</span><span class="nv"> </span><span class="s">interface</span><span class="nv"> </span><span class="s">provided</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">hardware</span><span class="nv"> </span><span class="s">responsible</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">end</span><span class="nv"> </span><span class="s">limit</span><span class="nv"> </span><span class="s">sensor&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 32</span><span class="nt">        read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 33</span><span class="nt">        validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> not_empty&lt;&gt;</span><span class="p">:</span><span class="w"> </span><span class="nv">null</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos"> 34</span><span class="w">      </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 35</span><span class="w">    </span><span class="nt">active_value</span><span class="p">:</span>
+<span class="linenos"> 36</span><span class="w">      </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 37</span><span class="nt">        type</span><span class="p">:</span><span class="w"> </span><span class="nv">double</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 38</span><span class="nt">        default_value</span><span class="p">:</span><span class="w"> </span><span class="nv">1.0</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 39</span><span class="nt">        description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Value</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">state</span><span class="nv"> </span><span class="s">interface</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">end</span><span class="nv"> </span><span class="s">limit</span><span class="nv"> </span><span class="s">sensor</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">active&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 40</span><span class="nt">        read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 41</span><span class="nt">        validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="w"> </span><span class="s">&quot;secured_1d_velocity_controller::is_finite&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="nv">null</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos"> 42</span><span class="w">      </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 43</span><span class="w">  </span><span class="nt">reference_topic</span><span class="p">:</span>
+<span class="linenos"> 44</span><span class="w">    </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 45</span><span class="nt">      type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 46</span><span class="nt">      default_value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;reference_velocity&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 47</span><span class="nt">      description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">topic</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">receive</span><span class="nv"> </span><span class="s">reference</span><span class="nv"> </span><span class="s">commands&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 48</span><span class="nt">      read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 49</span><span class="nt">      validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> not_empty&lt;&gt;</span><span class="p">:</span><span class="w"> </span><span class="nv">null</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos"> 50</span><span class="w">    </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 51</span><span class="w">  </span><span class="nt">zero_velocity_tolerance</span><span class="p">:</span>
+<span class="linenos"> 52</span><span class="w">    </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 53</span><span class="nt">      type</span><span class="p">:</span><span class="w"> </span><span class="nv">double</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 54</span><span class="nt">      default_value</span><span class="p">:</span><span class="w"> </span><span class="nv">1.e-6</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 55</span><span class="nt">      description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Tolerance</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">consider</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">velocity</span><span class="nv"> </span><span class="s">command</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">zero&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 56</span><span class="nt">      read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 57</span><span class="nt">      validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> gt&lt;&gt;</span><span class="p">:</span><span class="w"> </span><span class="nv">0.0</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos"> 58</span><span class="w">    </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 59</span><span class="w">  </span><span class="nt">security_mode_service</span><span class="p">:</span>
+<span class="linenos"> 60</span><span class="w">    </span><span class="nt">default_mode</span><span class="p">:</span>
+<span class="linenos"> 61</span><span class="w">      </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 62</span><span class="nt">        type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 63</span><span class="nt">        default_value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;SECURE&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 64</span><span class="nt">        description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Default</span><span class="nv"> </span><span class="s">mode</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">controller.</span><span class="nv"> </span><span class="s">Available</span><span class="nv"> </span><span class="s">modes</span><span class="nv"> </span><span class="s">are:</span>
+<span class="linenos"> 65</span><span class="w">          </span><span class="s">1.</span><span class="nv"> </span><span class="s">SECURE,</span>
+<span class="linenos"> 66</span><span class="w">          </span><span class="s">2.</span><span class="nv"> </span><span class="s">INSECURE</span>
+<span class="linenos"> 67</span><span class="w">          </span><span class="s">The</span><span class="nv"> </span><span class="s">SECURE</span><span class="nv"> </span><span class="s">mode</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">activate</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">security</span><span class="nv"> </span><span class="s">limits.</span>
+<span class="linenos"> 68</span><span class="w">          </span><span class="s">The</span><span class="nv"> </span><span class="s">INSECURE</span><span class="nv"> </span><span class="s">mode</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">deactivate</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">security</span><span class="nv"> </span><span class="s">limits,</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">very</span><span class="nv"> </span><span class="s">careful</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">using</span><span class="nv"> </span><span class="s">this</span><span class="nv"> </span><span class="s">mode.&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 69</span><span class="nt">        read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 70</span><span class="nt">        validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> one_of&lt;&gt;</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[[</span><span class="s">&quot;SECURE&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;INSECURE&quot;</span><span class="p p-Indicator">]]</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos"> 71</span><span class="w">      </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 72</span><span class="w">    </span><span class="nt">service</span><span class="p">:</span>
+<span class="linenos"> 73</span><span class="w">      </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 74</span><span class="nt">        type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 75</span><span class="nt">        default_value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;set_secure_mode&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 76</span><span class="nt">        description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">service</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">activate</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">deactivate</span><span class="nv"> </span><span class="s">security</span><span class="nv"> </span><span class="s">limit&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 77</span><span class="nt">        read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 78</span><span class="nt">        validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{},</span>
+<span class="linenos"> 79</span><span class="w">      </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 80</span><span class="w">  </span><span class="nt">log_mode_service</span><span class="p">:</span>
+<span class="linenos"> 81</span><span class="w">    </span><span class="nt">default_mode</span><span class="p">:</span>
+<span class="linenos"> 82</span><span class="w">      </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 83</span><span class="nt">        type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 84</span><span class="nt">        default_value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;NO_LOG&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 85</span><span class="nt">        description</span><span class="p">:</span>
+<span class="linenos"> 86</span><span class="w">          </span><span class="s">&quot;Default</span><span class="nv"> </span><span class="s">log</span><span class="nv"> </span><span class="s">mode</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">controller.</span><span class="nv"> </span><span class="s">Available</span><span class="nv"> </span><span class="s">modes</span><span class="nv"> </span><span class="s">are:</span>
+<span class="linenos"> 87</span><span class="w">          </span><span class="s">1.</span><span class="nv"> </span><span class="s">NO_LOG,</span>
+<span class="linenos"> 88</span><span class="w">          </span><span class="s">2.</span><span class="nv"> </span><span class="s">LOG,</span>
+<span class="linenos"> 89</span><span class="w">          </span><span class="s">The</span><span class="nv"> </span><span class="s">LOG</span><span class="nv"> </span><span class="s">mode</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">log</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">security</span><span class="nv"> </span><span class="s">limit</span><span class="nv"> </span><span class="s">activation</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">deactivation.&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 90</span><span class="nt">        read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 91</span><span class="nt">        validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> one_of&lt;&gt;</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[[</span><span class="s">&quot;NO_LOG&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;LOG&quot;</span><span class="p p-Indicator">]]</span><span class="w"> </span><span class="p p-Indicator">},</span>
+<span class="linenos"> 92</span><span class="w">      </span><span class="p p-Indicator">}</span>
+<span class="linenos"> 93</span><span class="w">    </span><span class="nt">service</span><span class="p">:</span>
+<span class="linenos"> 94</span><span class="w">      </span><span class="p p-Indicator">{</span>
+<span class="linenos"> 95</span><span class="nt">        type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 96</span><span class="nt">        default_value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;set_secure_mode&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 97</span><span class="nt">        description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">service</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">activate</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">deactivate</span><span class="nv"> </span><span class="s">security</span><span class="nv"> </span><span class="s">limit&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 98</span><span class="nt">        read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
+<span class="linenos"> 99</span><span class="nt">        validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{},</span>
+<span class="linenos">100</span><span class="w">      </span><span class="p p-Indicator">}</span>
+</pre></div>
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Manuel YGUEL.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
