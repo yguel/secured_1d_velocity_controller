@@ -139,21 +139,20 @@ This default behavior is here to ensure that the user is aware of the security p
 <div class="code-block-caption"><span class="caption-text">Example of a yaml configuration file for the secured 1d velocity controller</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">test_secured_1d_velocity_controller</span><span class="p">:</span>
 <span class="linenos"> 2</span><span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
-<span class="linenos"> 3</span><span class="w">    </span><span class="nt">joint</span><span class="p">:</span>
-<span class="linenos"> 4</span><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">joint1</span>
-<span class="linenos"> 5</span><span class="w">    </span><span class="nt">start_limit</span><span class="p">:</span>
-<span class="linenos"> 6</span><span class="w">      </span><span class="nt">state_interface_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start_limit_sensor/limit_switch</span>
-<span class="linenos"> 7</span><span class="w">      </span><span class="nt">active_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
-<span class="linenos"> 8</span><span class="w">    </span><span class="nt">end_limit</span><span class="p">:</span>
-<span class="linenos"> 9</span><span class="w">      </span><span class="nt">state_interface_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end_limit_sensor/limit_switch</span>
-<span class="linenos">10</span><span class="w">      </span><span class="nt">active_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
-<span class="linenos">11</span><span class="w">    </span><span class="nt">reference_topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reference_velocity</span>
-<span class="linenos">12</span><span class="w">    </span><span class="nt">security_mode_service</span><span class="p">:</span>
-<span class="linenos">13</span><span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SECURE</span>
-<span class="linenos">14</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_secure_mode</span>
-<span class="linenos">15</span><span class="w">    </span><span class="nt">log_mode_service</span><span class="p">:</span>
-<span class="linenos">16</span><span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NO_LOG</span>
-<span class="linenos">17</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_log_mode</span>
+<span class="linenos"> 3</span><span class="w">    </span><span class="nt">joint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">joint1</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="nt">start_limit</span><span class="p">:</span>
+<span class="linenos"> 5</span><span class="w">      </span><span class="nt">state_interface_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start_limit_sensor/limit_switch</span>
+<span class="linenos"> 6</span><span class="w">      </span><span class="nt">active_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="nt">end_limit</span><span class="p">:</span>
+<span class="linenos"> 8</span><span class="w">      </span><span class="nt">state_interface_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end_limit_sensor/limit_switch</span>
+<span class="linenos"> 9</span><span class="w">      </span><span class="nt">active_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="linenos">10</span><span class="w">    </span><span class="nt">reference_topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reference_velocity</span>
+<span class="linenos">11</span><span class="w">    </span><span class="nt">security_mode_service</span><span class="p">:</span>
+<span class="linenos">12</span><span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SECURE</span>
+<span class="linenos">13</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_secure_mode</span>
+<span class="linenos">14</span><span class="w">    </span><span class="nt">log_mode_service</span><span class="p">:</span>
+<span class="linenos">15</span><span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NO_LOG</span>
+<span class="linenos">16</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_log_mode</span>
 </pre></div>
 </div>
 </div>
@@ -163,7 +162,7 @@ This default behavior is here to ensure that the user is aware of the security p
 <span class="linenos">  2</span><span class="w">  </span><span class="nt">joint</span><span class="p">:</span>
 <span class="linenos">  3</span><span class="w">    </span><span class="p p-Indicator">{</span>
 <span class="linenos">  4</span><span class="nt">      type</span><span class="p">:</span><span class="w"> </span><span class="nv">string</span><span class="p p-Indicator">,</span>
-<span class="linenos">  5</span><span class="nt">      description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">joint</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">controller&quot;</span><span class="p p-Indicator">,</span>
+<span class="linenos">  5</span><span class="nt">      description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">joint</span><span class="nv"> </span><span class="s">used</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">controller.</span><span class="nv"> </span><span class="s">Cannot</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">empty.&quot;</span><span class="p p-Indicator">,</span>
 <span class="linenos">  6</span><span class="nt">      read_only</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="p p-Indicator">,</span>
 <span class="linenos">  7</span><span class="nt">      validation</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> not_empty&lt;&gt;</span><span class="p">:</span><span class="w"> </span><span class="nv">null</span><span class="w"> </span><span class="p p-Indicator">},</span>
 <span class="linenos">  8</span><span class="w">    </span><span class="p p-Indicator">}</span>
