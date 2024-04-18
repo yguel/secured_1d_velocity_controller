@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Documentation for secure 1d controllers for ROS2 control &mdash; secured_1d_velocity_controller 0.0.1 documentation</title>
+  <title>Secured 1d Velocity Controller Parameters &mdash; secured_1d_velocity_controller 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
       <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
@@ -37,7 +37,7 @@
 
           
           
-          <a href="#" class="icon icon-home">
+          <a href="index.html" class="icon icon-home">
             secured_1d_velocity_controller
           </a>
 <div role="search">
@@ -50,11 +50,7 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <!-- Local TOC -->
               <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">Documentation for secure 1d controllers for ROS2 control</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-<li><a class="reference internal" href="#secure-1d-velocity-controller">Secure 1D Velocity Controller</a></li>
-<li><a class="reference internal" href="#configuration-of-the-security-parameters">Configuration of the security parameters</a></li>
-<li><a class="reference internal" href="#secured-1d-velocity-controller-parameters">Secured 1d Velocity Controller Parameters</a><ul>
+<li><a class="reference internal" href="#">Secured 1d Velocity Controller Parameters</a><ul>
 <li><a class="reference internal" href="#joint">joint</a></li>
 <li><a class="reference internal" href="#start-limit-state-interface">start_limit.state_interface</a></li>
 <li><a class="reference internal" href="#start-limit-active-value">start_limit.active_value</a></li>
@@ -65,10 +61,7 @@
 <li><a class="reference internal" href="#security-mode-service-default-mode">security_mode_service.default_mode</a></li>
 <li><a class="reference internal" href="#security-mode-service-service">security_mode_service.service</a></li>
 <li><a class="reference internal" href="#log-mode-service-default-mode">log_mode_service.default_mode</a></li>
-<li><a class="reference internal" href="#log-mode-service-service">log_mode_service.service</a><ul>
-<li><a class="reference internal" href="#example-of-a-configuration-file">Example of a configuration file</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#log-mode-service-service">log_mode_service.service</a></li>
 </ul>
 </li>
 </ul>
@@ -79,17 +72,17 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">secured_1d_velocity_controller</a>
+          <a href="index.html">secured_1d_velocity_controller</a>
       </nav>
 
       <div class="wy-nav-content">
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Documentation for secure 1d controllers for ROS2 control</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Secured 1d Velocity Controller Parameters</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/secured_1d_velocity_controller_parameters.md.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -97,58 +90,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="documentation-for-secure-1d-controllers-for-ros2-control">
-<h1>Documentation for secure 1d controllers for ROS2 control<a class="headerlink" href="#documentation-for-secure-1d-controllers-for-ros2-control" title="Link to this heading"></a></h1>
-<div class="toctree-wrapper compound">
-</div>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
-</section>
-<section id="secure-1d-velocity-controller">
-<h1>Secure 1D Velocity Controller<a class="headerlink" href="#secure-1d-velocity-controller" title="Link to this heading"></a></h1>
-<p>We consider that the 1 degree of freedom (1D) system has at least one limit.
-Our model of 1D actioned system is that the position is increasing:</p>
-<ol class="arabic simple">
-<li><p>from the start limit to the end limit in case of 2 limits</p></li>
-<li><p>from the start limit in case of 1 limit (the end limit not being defined)</p></li>
-<li><p>to the end limit in case of 1 limit (the start limit not being defined)</p></li>
-</ol>
-<p>The velocity being the derivative of the position with respect to time, the
-sign of the velocity is positive when the motion direction is towards the end
-limit and negative when the motion direction is towards the start limit.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">start</span> <span class="pre">limit</span></code> is also called in the literature the <code class="docutils literal notranslate"><span class="pre">negative</span> <span class="pre">limit</span></code>
-and the <code class="docutils literal notranslate"><span class="pre">end</span> <span class="pre">limit</span></code> is sometimes called the <code class="docutils literal notranslate"><span class="pre">positive</span> <span class="pre">limit</span></code>.</p>
-<p>Then the following safety rules are applied in conjunction except if specified
-otherwise:</p>
-<ol class="arabic simple">
-<li><p>The velocity is limited by the maximum velocity</p></li>
-<li><p>The acceleration is limited by the maximum acceleration</p></li>
-<li><p>The tracking error is limited by the maximum tracking error (the tracking error is the difference between the reference velocity and the actual velocity)</p></li>
-<li><p>If one limit is active, the only admissible velocities should have a direction/sign that direct the motion away from the active limit. In that case the tracking error check is not applied.</p></li>
-<li><p>If an effort sensor is available, the effort is limited by the maximum effort.</p></li>
-</ol>
-<p>It is possible to disable any of those checks, but it is necessary to do it explicitly.
-For all those checks there is a default value (very conservative).
-These values can (must) be changed by the user.
-This default behavior is here to ensure that the user is aware of the security problem and to force the user to take a decision about it.</p>
-</section>
-<section id="configuration-of-the-security-parameters">
-<h1>Configuration of the security parameters<a class="headerlink" href="#configuration-of-the-security-parameters" title="Link to this heading"></a></h1>
-<p>The security parameters are configured in the yaml configuration file.</p>
-<p>The information we need to configure the security parameters are:</p>
-<ol class="arabic simple">
-<li><p>the name of the joint for which the security parameters are configured</p></li>
-<li><p>the state interface names of the start and end limits</p></li>
-<li><p>the state interface name of the velocity</p></li>
-<li><p>the command interface name of the velocity</p></li>
-</ol>
-</section>
-<section id="secured-1d-velocity-controller-parameters">
+  <section id="secured-1d-velocity-controller-parameters">
 <h1>Secured 1d Velocity Controller Parameters<a class="headerlink" href="#secured-1d-velocity-controller-parameters" title="Link to this heading"></a></h1>
 <p>Default Config</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">secured_1d_velocity_controller</span><span class="p">:</span>
@@ -304,30 +246,6 @@ This default behavior is here to ensure that the user is aware of the security p
 <li><p>Default Value: “set_secure_mode”</p></li>
 <li><p>Read only: True</p></li>
 </ul>
-<section id="example-of-a-configuration-file">
-<h3>Example of a configuration file<a class="headerlink" href="#example-of-a-configuration-file" title="Link to this heading"></a></h3>
-<div class="literal-block-wrapper docutils container" id="id1">
-<div class="code-block-caption"><span class="caption-text">Example of a yaml configuration file for the secured 1d velocity controller</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">test_secured_1d_velocity_controller</span><span class="p">:</span>
-<span class="linenos"> 2</span><span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
-<span class="linenos"> 3</span><span class="w">    </span><span class="nt">joint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">joint1</span>
-<span class="linenos"> 4</span><span class="w">    </span><span class="nt">start_limit</span><span class="p">:</span>
-<span class="linenos"> 5</span><span class="w">      </span><span class="nt">state_interface_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start_limit_sensor/limit_switch</span>
-<span class="linenos"> 6</span><span class="w">      </span><span class="nt">active_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
-<span class="linenos"> 7</span><span class="w">    </span><span class="nt">end_limit</span><span class="p">:</span>
-<span class="linenos"> 8</span><span class="w">      </span><span class="nt">state_interface_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end_limit_sensor/limit_switch</span>
-<span class="linenos"> 9</span><span class="w">      </span><span class="nt">active_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
-<span class="linenos">10</span><span class="w">    </span><span class="nt">reference_topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reference_velocity</span>
-<span class="linenos">11</span><span class="w">    </span><span class="nt">security_mode_service</span><span class="p">:</span>
-<span class="linenos">12</span><span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SECURE</span>
-<span class="linenos">13</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_secure_mode</span>
-<span class="linenos">14</span><span class="w">    </span><span class="nt">log_mode_service</span><span class="p">:</span>
-<span class="linenos">15</span><span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NO_LOG</span>
-<span class="linenos">16</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_log_mode</span>
-</pre></div>
-</div>
-</div>
-</section>
 </section>
 </section>
 
