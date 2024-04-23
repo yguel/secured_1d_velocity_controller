@@ -36,18 +36,37 @@ TEST_F(Secured1dVelocityControllerTest, all_parameters_set_configure_success)
 {
   SetUpController();
 
-  ASSERT_EQ(controller_->params_.joint, std::string(""));
-  ASSERT_EQ(controller_->params_.start_limit.state_interface, std::string(""));
-  ASSERT_EQ(controller_->params_.end_limit.state_interface, std::string(""));
-  ASSERT_EQ(controller_->params_.reference_topic, std::string(""));
-  ASSERT_EQ(controller_->params_.security_mode_service.default_mode, std::string(""));
-  ASSERT_EQ(controller_->params_.security_mode_service.service, std::string(""));
-  ASSERT_EQ(controller_->params_.log_mode_service.default_mode, std::string(""));
-  ASSERT_EQ(controller_->params_.log_mode_service.service, std::string(""));
+  /** Test that parameters are initialized with default values
+   * ==========================================================
+   */
+  ASSERT_EQ(controller_->params_.joint, std::string("joint_name"));
 
+  ASSERT_EQ(
+    controller_->params_.start_limit.state_interface,
+    std::string("start_limit_sensor/limit_switch"));
+  ASSERT_EQ(controller_->params_.start_limit.active_value, static_cast<double>(1.0));
+
+  ASSERT_EQ(
+    controller_->params_.end_limit.state_interface, std::string("end_limit_sensor/limit_switch"));
+  ASSERT_EQ(controller_->params_.end_limit.active_value, static_cast<double>(1.0));
+
+  ASSERT_EQ(controller_->params_.reference_topic, std::string("reference_velocity"));
+
+  ASSERT_EQ(controller_->params_.zero_velocity_tolerance, static_cast<double>(1e-6));
+
+  ASSERT_EQ(controller_->params_.security_mode_service.default_mode, std::string("SECURE"));
+  ASSERT_EQ(controller_->params_.security_mode_service.service, std::string("set_secure_mode"));
+  ASSERT_EQ(controller_->params_.log_mode_service.default_mode, std::string("NO_LOG"));
+  ASSERT_EQ(controller_->params_.log_mode_service.service, std::string("set_log_mode"));
+
+  /** Test that controller can correctly pass the configure stage
+   * =============================================================
+   */
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
 
-  // Check parameters
+  /** Test that the parameters are correctly set
+   * ============================================
+   */
   ASSERT_EQ(controller_->params_.joint, joint_name_);
 
   ASSERT_EQ(
@@ -64,6 +83,8 @@ TEST_F(Secured1dVelocityControllerTest, all_parameters_set_configure_success)
 
   ASSERT_EQ(controller_->params_.reference_topic, reference_topic_);
 
+  ASSERT_EQ(controller_->params_.zero_velocity_tolerance, zero_velocity_tolerance_);
+
   ASSERT_EQ(
     controller_->params_.security_mode_service.default_mode, security_service_default_mode_);
   ASSERT_EQ(controller_->params_.security_mode_service.service, security_service_name_);
@@ -71,6 +92,8 @@ TEST_F(Secured1dVelocityControllerTest, all_parameters_set_configure_success)
   ASSERT_EQ(controller_->params_.log_mode_service.default_mode, log_service_default_mode_);
   ASSERT_EQ(controller_->params_.log_mode_service.service, log_service_name_);
 }
+
+/*
 
 TEST_F(Secured1dVelocityControllerTest, check_exported_intefaces)
 {
@@ -142,6 +165,14 @@ TEST_F(Secured1dVelocityControllerTest, reactivate_success)
     controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
     controller_interface::return_type::OK);
 }
+
+*/
+
+/**
+ * MAKES NO SENS
+ * ====================================================================================
+ *
+ */
 
 /*
 TEST_F(Secured1dVelocityControllerTest, test_setting_slow_mode_service)
@@ -231,6 +262,12 @@ TEST_F(Secured1dVelocityControllerTest, test_update_logic_slow)
 }
 */
 
+/**
+ * End of MAKES NO SENS
+ * ====================================================================================
+ */
+
+/**
 TEST_F(Secured1dVelocityControllerTest, publish_status_success)
 {
   SetUpController();
@@ -277,6 +314,7 @@ TEST_F(Secured1dVelocityControllerTest, receive_message_and_publish_updated_stat
 
   ASSERT_EQ(msg.set_point, reference_value_pos_[CMD_V_ITFS]);
 }
+*/
 
 int main(int argc, char ** argv)
 {

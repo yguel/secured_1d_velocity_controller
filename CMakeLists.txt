@@ -59,6 +59,7 @@ if(BUILD_TESTING)
   find_package(controller_manager REQUIRED)
   find_package(ros2_control_test_assets REQUIRED)
 
+  # Test if the controller can be loaded
   ament_add_gmock(test_load_secured_1d_velocity_controller
                   test/test_load_secured_1d_velocity_controller.cpp)
   target_link_libraries(test_load_secured_1d_velocity_controller
@@ -68,26 +69,22 @@ if(BUILD_TESTING)
     test_load_secured_1d_velocity_controller controller_manager
     hardware_interface ros2_control_test_assets)
 
-  # add_rostest_with_parameters_gmock( test_load_secured_1d_velocity_controller
-  # #the name of the test test/test_load_secured_1d_velocity_controller.cpp #the
-  # name of the CPP file
-  # ${CMAKE_CURRENT_SOURCE_DIR}/test/secured_1d_velocity_controller_params.yaml
-  # ) target_include_directories(test_load_secured_1d_velocity_controller PUBLIC
-  # ${GMOCK_INCLUDE_DIRS} )
+  # Test other aspects of the controller
+  set(test_sources1 test/test_secured_1d_velocity_controller.cpp)
+  set(test_params1
+  ${CMAKE_CURRENT_SOURCE_DIR}/test/secured_1d_velocity_controller_params.yaml)
 
-  # set(test_sources1 test/test_secured_1d_velocity_controller.cpp)
-  # set(test_params1
-  # ${CMAKE_CURRENT_SOURCE_DIR}/test/secured_1d_velocity_controller_params.yaml)
+  add_rostest_with_parameters_gmock( test_secured_1d_velocity_controller
+  ${test_sources1} ${test_params1} )
 
-  # add_rostest_with_parameters_gmock( test_secured_1d_velocity_controller
-  # ${test_sources1} ${test_params1} )
+  target_include_directories(test_secured_1d_velocity_controller PUBLIC
+  ${GMOCK_INCLUDE_DIRS})
+  target_link_libraries(test_secured_1d_velocity_controller
+  secured_1d_velocity_controller)
 
-  # target_include_directories(test_secured_1d_velocity_controller PUBLIC
-  # ${GMOCK_INCLUDE_DIRS} )
-  # target_link_libraries(test_secured_1d_velocity_controller
-  # secured_1d_velocity_controller) ament_target_dependencies(
-  # test_secured_1d_velocity_controller controller_interface hardware_interface
-  # ros2_control_test_assets )
+  ament_target_dependencies(
+    test_secured_1d_velocity_controller controller_interface hardware_interface
+    ros2_control_test_assets)
 
   # set(test_sources2  test/test_secured_1d_velocity_controller_preceeding.cpp)
   # set(test_params2

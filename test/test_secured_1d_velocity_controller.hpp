@@ -140,6 +140,8 @@ protected:
   {
     ASSERT_EQ(controller_->init(controller_name), controller_interface::return_type::OK);
 
+    // Setup command interfaces
+    //=========================
     std::vector<hardware_interface::LoanedCommandInterface> command_ifs;
     command_itfs_.reserve(reference_command_values_.size());
     command_ifs.reserve(reference_command_values_.size());
@@ -150,6 +152,8 @@ protected:
       command_ifs.emplace_back(command_itfs_.back());
     }
 
+    // Setup state interfaces
+    //=======================
     std::vector<hardware_interface::LoanedStateInterface> state_ifs;
     state_itfs_.reserve(state_values_.size());
     state_ifs.reserve(state_values_.size());
@@ -161,6 +165,8 @@ protected:
       state_ifs.emplace_back(state_itfs_.back());
     }
 
+    // Copy the interfaces to the controller (commands and states)
+    //============================================================
     controller_->assign_interfaces(std::move(command_ifs), std::move(state_ifs));
   }
 
@@ -266,16 +272,17 @@ protected:
 protected:
   // Controller-related parameters
   std::string joint_name_ = "joint1";
-  std::vector<std::string> state_base_names_ = {"joint1", "start_limit_sensor", "end_limit_sensor"};
-  std::vector<std::string> state_interface_names_ = {"velocity", "limit_switch", "limit_switch"};
+  std::vector<std::string> state_base_names_ = {
+    "joint1", "negative_limit_sensor", "positive_limit_sensor"};
+  std::vector<std::string> state_interface_names_ = {"velocity", "switch", "switch"};
   double start_limit_active_value_ = 1.0;
-  double end_limit_active_value_ = 1.0;
-  double reset_velocity_ = 0.0;
-  std::string reference_topic_ = "reference_velocity";
+  double end_limit_active_value_ = 0.0;
+  double zero_velocity_tolerance_ = 0.0002;
+  std::string reference_topic_ = "velocity_command";
   std::string security_service_default_mode_ = "SECURE";
   std::string security_service_name_ = "set_security_mode";
-  std::string log_service_default_mode_ = "NO_LOG";
-  std::string log_service_name_ = "set_log_mode";
+  std::string log_service_default_mode_ = "LOG";
+  std::string log_service_name_ = "set_logging_mode";
 
   std::array<double, 3> state_values_ = {0., 0., 0.};         // velocity, start_limit, end_limit
   std::array<double, 3> state_values_ok_ = {2.5, 0., 0.};     // velocity, start_limit, end_limit

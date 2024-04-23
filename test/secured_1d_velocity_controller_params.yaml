@@ -2,15 +2,16 @@ test_secured_1d_velocity_controller:
   ros__parameters:
     joint: joint1
     start_limit:
-      state_interface_name: start_limit_sensor/limit_switch
+      state_interface: negative_limit_sensor/switch
       active_value: 1.0
     end_limit:
-      state_interface_name: end_limit_sensor/limit_switch
-      active_value: 1.0
-    reference_topic: reference_velocity
+      state_interface: positive_limit_sensor/switch
+      active_value: 0.0
+    reference_topic: velocity_command
+    zero_velocity_tolerance: 0.0002
     security_mode_service:
       default_mode: SECURE
-      service: set_secure_mode
+      service: set_security_mode
     log_mode_service:
-      default_mode: NO_LOG
-      service: set_log_mode
+      default_mode: LOG
+      service: set_logging_mode
