@@ -93,23 +93,34 @@ TEST_F(Secured1dVelocityControllerTest, all_parameters_set_configure_success)
   ASSERT_EQ(controller_->params_.log_mode_service.service, log_service_name_);
 }
 
-/*
-
 TEST_F(Secured1dVelocityControllerTest, check_exported_intefaces)
 {
   SetUpController();
 
+  /** Test that controller can correctly pass the configure stage
+   * =============================================================
+   */
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
 
+  /** Commands
+   * =========
+   */
   auto command_intefaces = controller_->command_interface_configuration();
+  /** Test that the number of command interfaces is correct*/
   ASSERT_EQ(command_intefaces.names.size(), reference_command_values_.size());
+  /** Test that the order and the name of each interface is correct */
   for (size_t i = 0; i < command_intefaces.names.size(); ++i)
   {
     EXPECT_EQ(command_intefaces.names[i], joint_name_ + "/" + hardware_interface::HW_IF_VELOCITY);
   }
 
+  /** States
+   * =======
+   */
   auto state_intefaces = controller_->state_interface_configuration();
+  /** Test that the number of state interfaces is correct*/
   ASSERT_EQ(state_intefaces.names.size(), state_values_.size());
+  /** Test that the order and the name of each interface is correct */
   for (size_t i = 0; i < state_intefaces.names.size(); ++i)
   {
     EXPECT_EQ(state_intefaces.names[i], state_base_names_[i] + "/" + state_interface_names_[i]);
@@ -155,7 +166,9 @@ TEST_F(Secured1dVelocityControllerTest, reactivate_success)
 
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
-  ASSERT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), reference_command_values_[0]);
+  ASSERT_EQ(
+    controller_->command_interfaces_[CMD_V_ITFS].get_value(),
+    reference_command_values_[CMD_V_ITFS]);
   ASSERT_EQ(controller_->on_deactivate(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_TRUE(std::isnan(controller_->command_interfaces_[CMD_V_ITFS].get_value()));
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
@@ -165,8 +178,6 @@ TEST_F(Secured1dVelocityControllerTest, reactivate_success)
     controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
     controller_interface::return_type::OK);
 }
-
-*/
 
 /**
  * MAKES NO SENS

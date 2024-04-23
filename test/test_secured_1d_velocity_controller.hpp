@@ -42,6 +42,7 @@ using ControllerReferenceMsg =
 using ControllerModeSrvType =
   secured_1d_velocity_controller::Secured1dVelocityController::ControllerModeSrvType;
 using control_mode_type = secured_1d_velocity_controller::control_mode_type;
+using secured_1d_velocity_controller::CMD_V_ITFS;
 
 namespace
 {
@@ -147,8 +148,9 @@ protected:
     command_ifs.reserve(reference_command_values_.size());
 
     {  // One joint, one command interface
+      // Set one valid command interface value
       command_itfs_.emplace_back(hardware_interface::CommandInterface(
-        joint_name_, hardware_interface::HW_IF_VELOCITY, &reference_command_values_[0]));
+        joint_name_, hardware_interface::HW_IF_VELOCITY, &reference_command_values_[CMD_V_ITFS]));
       command_ifs.emplace_back(command_itfs_.back());
     }
 
@@ -278,6 +280,7 @@ protected:
   double start_limit_active_value_ = 1.0;
   double end_limit_active_value_ = 0.0;
   double zero_velocity_tolerance_ = 0.0002;
+  double reset_velocity_ = 0.0;
   std::string reference_topic_ = "velocity_command";
   std::string security_service_default_mode_ = "SECURE";
   std::string security_service_name_ = "set_security_mode";

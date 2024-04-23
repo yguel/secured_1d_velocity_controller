@@ -237,6 +237,9 @@ controller_interface::CallbackReturn Secured1dVelocityController::on_activate(
   // Set default value in command
   reset_controller_reference_msg(*(input_ref_.readFromRT)());
 
+  // Set default value for command interface
+  command_interfaces_[CMD_V_ITFS].set_value(0.0);
+
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
