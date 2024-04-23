@@ -3,7 +3,20 @@ secured_1d_velocity_controller
 
 Simple velocity controller for a simple 1D joint that takes into account limit switches to prevent the joint to exceed limits by zeroing velocities that induce breaking limits.
 
+The online documentation is available at: [https://yguel.github.io/secured_1d_velocity_controller/](https://yguel.github.io/secured_1d_velocity_controller/)
+
 ![Licence](https://img.shields.io/badge/License-MIT-blue.svg)
+
+# Build the documentation
+Go to the `doc` folder and run the following command:
+```
+cd doc
+pipenv install
+pipenv run make html
+```
+
+The documentation is then available in the `doc/_build/html` folder.
+You can view it with your browser by accessing the file: `doc/_build/html/index.html`
 
 # Quick Start Instructions
 
@@ -21,15 +34,20 @@ If you end up with missing dependencies, install them using commands from [Setup
 
 # How to use this Package and ROS Introduction
 
- - [Install and Build](#install-and-build)
-   * [Install ROS Humble and Development Tooling](#install-ros-$ros_distro$-and-development-tooling)
-   * [Setup ROS Workspace](#setup-ros-workspace)
-   * [Configure and Build Workspace](#configure-and-build-workspace)
- - [Running Executables](#running-executables)
-   * [Using the Local Workspace](#using-the-local-workspace)
- - [Testing and Linting](#testing-and-linting)
- - [Creating a new ROS2 Package](#creating-a-new-ros2-package)
- - [References](#references)
+- [secured\_1d\_velocity\_controller](#secured_1d_velocity_controller)
+- [Build the documentation](#build-the-documentation)
+- [Quick Start Instructions](#quick-start-instructions)
+- [How to use this Package and ROS Introduction](#how-to-use-this-package-and-ros-introduction)
+  - [Install and Build](#install-and-build)
+    - [Install ROS Humble and Development Tooling](#install-ros-humble-and-development-tooling)
+    - [Setup ROS Workspace](#setup-ros-workspace)
+    - [Configure and Build Workspace:](#configure-and-build-workspace)
+  - [Running Executable](#running-executable)
+    - [Using the Local Workspace](#using-the-local-workspace)
+      - [Notes on Sourcing ROS Workspace](#notes-on-sourcing-ros-workspace)
+  - [Testing and Linting](#testing-and-linting)
+  - [Creating a new ROS2 Package](#creating-a-new-ros2-package)
+  - [References](#references)
 
 ## Install and Build
 
