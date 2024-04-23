@@ -5,8 +5,7 @@ secured_1d_velocity_controller:
       description: "Name of the joint used by the controller. Cannot be empty.",
       read_only: true,
       default_value: "joint_name",
-      validation: {
-        not_empty<>: null },
+      validation: { not_empty<>: null },
     }
   start_limit:
     state_interface:
@@ -95,8 +94,8 @@ secured_1d_velocity_controller:
     service:
       {
         type: string,
-        default_value: "set_secure_mode",
-        description: "Name of the service used to activate or deactivate security limit",
+        default_value: "set_log_mode",
+        description: "Name of the service used to activate or deactivate logging of security limit activation and deactivation",
         read_only: true,
         validation: {},
       }
