@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Description of unit tests of the secured_1d_velocity_controller package &mdash; secured_1d_velocity_controller 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=c2bf3912" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            secured_1d_velocity_controller
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Description of unit tests of the secured_1d_velocity_controller package</a></li>
+<li><a class="reference internal" href="#tests-for-behavioral-correctness">Tests for behavioral correctness</a></li>
+<li><a class="reference internal" href="#standard-ros2-control-tests">Standard ROS2 control tests</a><ul>
+<li><a class="reference internal" href="#test-if-the-controller-can-be-loaded">Test if the controller can be loaded</a></li>
+<li><a class="reference internal" href="#test-if-all-controller-parameters-can-be-set">Test if all controller parameters can be set</a></li>
+<li><a class="reference internal" href="#test-if-the-controller-interfaces-are-correctly-exported">Test if the controller interfaces are correctly exported</a></li>
+<li><a class="reference internal" href="#test-if-the-controller-can-be-activated">Test if the controller can be activated</a></li>
+<li><a class="reference internal" href="#test-if-the-controller-update-method-does-not-crash">Test if the controller update method does not crash</a></li>
+<li><a class="reference internal" href="#test-if-the-controller-can-be-deactivated">Test if the controller can be deactivated</a></li>
+<li><a class="reference internal" href="#test-if-the-controller-can-be-reactivated">Test if the controller can be reactivated</a></li>
+<li><a class="reference internal" href="#test-if-the-controller-can-publish-its-status-correctly">Test if the controller can publish its status correctly</a></li>
+<li><a class="reference internal" href="#test-if-the-controller-can-receive-message-and-update-its-status-correctly">Test if the controller can receive message and update its status correctly</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">secured_1d_velocity_controller</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Description of unit tests of the secured_1d_velocity_controller package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/unit_testing.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="description-of-unit-tests-of-the-secured-1d-velocity-controller-package">
+<h1>Description of unit tests of the secured_1d_velocity_controller package<a class="headerlink" href="#description-of-unit-tests-of-the-secured-1d-velocity-controller-package" title="Link to this heading"></a></h1>
+</section>
+<section id="tests-for-behavioral-correctness">
+<h1>Tests for behavioral correctness<a class="headerlink" href="#tests-for-behavioral-correctness" title="Link to this heading"></a></h1>
+</section>
+<section id="standard-ros2-control-tests">
+<h1>Standard ROS2 control tests<a class="headerlink" href="#standard-ros2-control-tests" title="Link to this heading"></a></h1>
+<section id="test-if-the-controller-can-be-loaded">
+<h2>Test if the controller can be loaded<a class="headerlink" href="#test-if-the-controller-can-be-loaded" title="Link to this heading"></a></h2>
+</section>
+<section id="test-if-all-controller-parameters-can-be-set">
+<h2>Test if all controller parameters can be set<a class="headerlink" href="#test-if-all-controller-parameters-can-be-set" title="Link to this heading"></a></h2>
+<p>This test checks the <code class="docutils literal notranslate"><span class="pre">on_configure</span></code> stage.</p>
+<p>It initializes the controller by defining its interfaces (commands and states).
+The test action that are performed are the following:
+1. it <strong>tests</strong> that before the controller is configured all its parameters are set to default values (e.g. empty strings, zeros, etc.);
+2. it configures the controller with the example of configuration file (<cite>test/secured_1d_velocity_controller_params.yaml</cite>) with the <code class="docutils literal notranslate"><span class="pre">on_configure</span></code> method;
+3. it <strong>tests</strong> that the controller can correctly pass the configure stage;
+4. it <strong>tests</strong> that after the controller is configured all its parameters are set to the values defined in the configuration file.</p>
+</section>
+<section id="test-if-the-controller-interfaces-are-correctly-exported">
+<h2>Test if the controller interfaces are correctly exported<a class="headerlink" href="#test-if-the-controller-interfaces-are-correctly-exported" title="Link to this heading"></a></h2>
+<p>It initializes the controller by defining its interfaces (commands and states)
+1. <code class="docutils literal notranslate"><span class="pre">SetUpController</span></code> method
+2. call the <code class="docutils literal notranslate"><span class="pre">on_configure</span></code> method</p>
+<p>The test action that are performed are the following:
+1. it <strong>tests</strong> that the controller can correctly pass the configure stage;
+2. it gets the command interfaces after configuration;
+3. it <strong>tests</strong> that the controller has the correct number of command interfaces;
+4. it <strong>tests</strong> that the controller has the correct order and name for the vector of command interfaces;
+5. it gets the state interfaces after configuration;
+6. it <strong>tests</strong> that the controller has the correct number of state interfaces;
+7. it <strong>tests</strong> that the controller has the correct order and name for the vector of state interfaces.</p>
+</section>
+<section id="test-if-the-controller-can-be-activated">
+<h2>Test if the controller can be activated<a class="headerlink" href="#test-if-the-controller-can-be-activated" title="Link to this heading"></a></h2>
+<p>It initializes the controller by defining its interfaces (commands and states)
+1. <code class="docutils literal notranslate"><span class="pre">SetUpController</span></code> method
+2. call the <code class="docutils literal notranslate"><span class="pre">on_configure</span></code> method
+3. call the <code class="docutils literal notranslate"><span class="pre">on_activate</span></code> method</p>
+<p>The test action that are performed are the following:
+1. it <strong>tests</strong> that the controller can correctly pass the configure stage;
+2. it <strong>tests</strong> that the controller can correctly pass the activate stage;
+3. it <strong>tests</strong> that the velocity value in the controller reference is set to zero.</p>
+</section>
+<section id="test-if-the-controller-update-method-does-not-crash">
+<h2>Test if the controller update method does not crash<a class="headerlink" href="#test-if-the-controller-update-method-does-not-crash" title="Link to this heading"></a></h2>
+<p>This test call the <code class="docutils literal notranslate"><span class="pre">update</span></code> method of the controller. The most important method that convert the reference command to the control command.
+This test does not check the correctness of the control command, but only if the method does not crash and returns the correct return code.</p>
+<p>It initializes the controller by defining its interfaces (commands and states)
+1. <code class="docutils literal notranslate"><span class="pre">SetUpController</span></code> method
+2. call the <code class="docutils literal notranslate"><span class="pre">on_configure</span></code> method
+3. call the <code class="docutils literal notranslate"><span class="pre">on_activate</span></code> method
+4. call the <code class="docutils literal notranslate"><span class="pre">update</span></code> method</p>
+<p>The test action that are performed are the following:
+1. it <strong>tests</strong> that the controller can correctly pass the configure stage;
+2. it <strong>tests</strong> that the controller can correctly pass the activate stage;
+3. it <strong>tests</strong> that the return code of the update method is correct;</p>
+</section>
+<section id="test-if-the-controller-can-be-deactivated">
+<h2>Test if the controller can be deactivated<a class="headerlink" href="#test-if-the-controller-can-be-deactivated" title="Link to this heading"></a></h2>
+<p>It initializes the controller by defining its interfaces (commands and states)
+1. <code class="docutils literal notranslate"><span class="pre">SetUpController</span></code> method
+2. call the <code class="docutils literal notranslate"><span class="pre">on_configure</span></code> method
+3. call the <code class="docutils literal notranslate"><span class="pre">on_activate</span></code> method
+4. call the <code class="docutils literal notranslate"><span class="pre">on_deactivate</span></code> method</p>
+<p>The test action that are performed are the following:
+1. it <strong>tests</strong> that the controller can correctly pass the configure stage;
+2. it <strong>tests</strong> that the controller can correctly pass the activate stage;
+3. it <strong>tests</strong> that the controller can correctly pass the deactivate stage;</p>
+</section>
+<section id="test-if-the-controller-can-be-reactivated">
+<h2>Test if the controller can be reactivated<a class="headerlink" href="#test-if-the-controller-can-be-reactivated" title="Link to this heading"></a></h2>
+<p>It initializes the controller by defining its interfaces (commands and states)
+1. <code class="docutils literal notranslate"><span class="pre">SetUpController</span></code> method
+2. call the <code class="docutils literal notranslate"><span class="pre">on_configure</span></code> method
+3. call the <code class="docutils literal notranslate"><span class="pre">on_activate</span></code> method
+4. Get the first command interface value after activation
+5. call the <code class="docutils literal notranslate"><span class="pre">on_deactivate</span></code> method
+6. Get the first command interface value after deactivation
+7. call the <code class="docutils literal notranslate"><span class="pre">on_activate</span></code> method
+8. Get the first command interface value after reactivation
+9. call the <code class="docutils literal notranslate"><span class="pre">update</span></code> method</p>
+<p>The test action that are performed are the following:
+1. it <strong>tests</strong> that the controller can correctly pass the configure stage;
+2. it <strong>tests</strong> that the controller can correctly pass the activate stage;
+3. it <strong>tests</strong> that the velocity command interface value is set to the reference command;
+4. it <strong>tests</strong> that the controller can correctly pass the deactivate stage;
+5. it <strong>tests</strong> that the velocity command interface value is set to nan;
+6. it <strong>tests</strong> that the controller can correctly pass the activate stage;
+7. it <strong>tests</strong> that the velocity command interface value is set to the zero;
+3. it <strong>tests</strong> that the return code of the update method is correct;</p>
+</section>
+<section id="test-if-the-controller-can-publish-its-status-correctly">
+<h2>Test if the controller can publish its status correctly<a class="headerlink" href="#test-if-the-controller-can-publish-its-status-correctly" title="Link to this heading"></a></h2>
+</section>
+<section id="test-if-the-controller-can-receive-message-and-update-its-status-correctly">
+<h2>Test if the controller can receive message and update its status correctly<a class="headerlink" href="#test-if-the-controller-can-receive-message-and-update-its-status-correctly" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Manuel YGUEL.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

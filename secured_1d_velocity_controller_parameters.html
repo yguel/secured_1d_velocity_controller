@@ -101,7 +101,7 @@
 <span class="w">    </span><span class="nt">joint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">joint_name</span>
 <span class="w">    </span><span class="nt">log_mode_service</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NO_LOG</span>
-<span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_secure_mode</span>
+<span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_log_mode</span>
 <span class="w">    </span><span class="nt">reference_topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reference_velocity</span>
 <span class="w">    </span><span class="nt">security_mode_service</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SECURE</span>
@@ -240,10 +240,10 @@
 </section>
 <section id="log-mode-service-service">
 <h2>log_mode_service.service<a class="headerlink" href="#log-mode-service-service" title="Link to this heading"></a></h2>
-<p>Name of the service used to activate or deactivate security limit</p>
+<p>Name of the service used to activate or deactivate logging of security limit activation and deactivation</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
-<li><p>Default Value: “set_secure_mode”</p></li>
+<li><p>Default Value: “set_log_mode”</p></li>
 <li><p>Read only: True</p></li>
 </ul>
 </section>

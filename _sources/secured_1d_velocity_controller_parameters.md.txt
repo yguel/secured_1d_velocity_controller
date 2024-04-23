@@ -10,7 +10,7 @@ secured_1d_velocity_controller:
     joint: joint_name
     log_mode_service:
       default_mode: NO_LOG
-      service: set_secure_mode
+      service: set_log_mode
     reference_topic: reference_velocity
     security_mode_service:
       default_mode: SECURE
@@ -131,9 +131,9 @@ Default log mode used by the controller. Available modes are: 1. NO_LOG, 2. LOG,
 
 ## log_mode_service.service
 
-Name of the service used to activate or deactivate security limit
+Name of the service used to activate or deactivate logging of security limit activation and deactivation
 
 * Type: `string`
-* Default Value: "set_secure_mode"
+* Default Value: "set_log_mode"
 * Read only: True
 
