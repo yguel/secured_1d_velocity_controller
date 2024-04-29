@@ -1,0 +1,139 @@
+# Secured 1d Velocity Controller Parameters
+
+Default Config
+```yaml
+secured_1d_velocity_controller:
+  ros__parameters:
+    end_limit:
+      active_value: 1.0
+      state_interface: end_limit_sensor/limit_switch
+    joint: joint_name
+    log_mode_service:
+      default_mode: NO_LOG
+      service: set_log_mode
+    reference_topic: reference_velocity
+    security_mode_service:
+      default_mode: SECURE
+      service: set_secure_mode
+    start_limit:
+      active_value: 1.0
+      state_interface: start_limit_sensor/limit_switch
+    zero_velocity_tolerance: 1.0e-06
+
+```
+
+## joint
+
+Name of the joint used by the controller. Cannot be empty.
+
+* Type: `string`
+* Default Value: "joint_name"
+* Read only: True
+
+*Constraints:*
+ - parameter is not empty
+
+## start_limit.state_interface
+
+State interface provided by the hardware responsible for the start limit sensor
+
+* Type: `string`
+* Default Value: "start_limit_sensor/limit_switch"
+* Read only: True
+
+*Constraints:*
+ - parameter is not empty
+
+## start_limit.active_value
+
+Value of the state interface when the start limit sensor is active
+
+* Type: `double`
+* Default Value: 1.0
+* Read only: True
+
+*Constraints:*
+ - Custom validator: secured_1d_velocity_controller::is_finite
+
+## end_limit.state_interface
+
+State interface provided by the hardware responsible for the end limit sensor
+
+* Type: `string`
+* Default Value: "end_limit_sensor/limit_switch"
+* Read only: True
+
+*Constraints:*
+ - parameter is not empty
+
+## end_limit.active_value
+
+Value of the state interface when the end limit sensor is active
+
+* Type: `double`
+* Default Value: 1.0
+* Read only: True
+
+*Constraints:*
+ - Custom validator: secured_1d_velocity_controller::is_finite
+
+## reference_topic
+
+Name of the topic used to receive reference commands
+
+* Type: `string`
+* Default Value: "reference_velocity"
+* Read only: True
+
+*Constraints:*
+ - parameter is not empty
+
+## zero_velocity_tolerance
+
+Tolerance used to consider the velocity command as zero
+
+* Type: `double`
+* Default Value: 1e-06
+* Read only: True
+
+*Constraints:*
+ - greater than 0.0
+
+## security_mode_service.default_mode
+
+Default mode used by the controller. Available modes are: 1. SECURE, 2. INSECURE The SECURE mode is used to activate the security limits. The INSECURE mode is used to deactivate the security limits, be very careful when using this mode.
+
+* Type: `string`
+* Default Value: "SECURE"
+* Read only: True
+
+*Constraints:*
+ - one of the specified values: ['SECURE', 'INSECURE']
+
+## security_mode_service.service
+
+Name of the service used to activate or deactivate security limit
+
+* Type: `string`
+* Default Value: "set_secure_mode"
+* Read only: True
+
+## log_mode_service.default_mode
+
+Default log mode used by the controller. Available modes are: 1. NO_LOG, 2. LOG, The LOG mode is used to log the security limit activation and deactivation.
+
+* Type: `string`
+* Default Value: "NO_LOG"
+* Read only: True
+
+*Constraints:*
+ - one of the specified values: ['NO_LOG', 'LOG']
+
+## log_mode_service.service
+
+Name of the service used to activate or deactivate logging of security limit activation and deactivation
+
+* Type: `string`
+* Default Value: "set_log_mode"
+* Read only: True
+
