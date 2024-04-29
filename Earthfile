@@ -2,7 +2,7 @@ VERSION 0.8
 # Automated build of CI/CD for the project
 
 # The docker image the build will run in
-FROM ubuntu:latest
+FROM ubuntu:22.04
 WORKDIR /earthly_workdir
 
 ARG --global python = python3.10

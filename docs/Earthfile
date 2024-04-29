@@ -2,7 +2,7 @@ VERSION 0.8
 # Documentation checks and build instructions for CI/CD
 
 # The docker image the build will run in
-FROM ubuntu:latest
+FROM ubuntu:22.04
 WORKDIR /earthly_workdir
 
 ARG --global python = python3.10
@@ -24,7 +24,7 @@ doc-files:
     #  Beware any symbolic link outside the Earthfile directory should be handled specifically
     COPY --dir --if-exists _static docs/
     COPY --dir --if-exists _templates docs/
-    COPY --dir conf.py Makefile make.bat requirements.txt *.rst docs/
+    COPY --dir conf.py Makefile make.bat requirements.txt *.rst quickstart user_guide developer_guide docs/
     SAVE ARTIFACT ./docs ./
 
 doc-deps:
@@ -40,20 +40,21 @@ doc-build:
     FROM +doc-deps
     COPY --dir (+doc-files/docs) .
     IF [ "$GENERATE_PARAMETER_LIBRARY_IS_USED" = "true" ]
-        RUN cd ./docs && \
-            ln -s ../src/$PARAM_FILE_DECLARATION $PARAM_FILE_DECLARATION_IN_DOC && \
-            ln -s ../test/$PARAM_FILE_EXAMPLE && \
-            cd ..
+        RUN cd ./docs/user_guide && \
+            ln -s ../../src/$PARAM_FILE_DECLARATION $PARAM_FILE_DECLARATION_IN_DOC && \
+            ln -s ../../test/$PARAM_FILE_EXAMPLE && \
+            cd ../..
 
         # Generate markdown for the parameter file
         LET GEN_MD_CMD="source /opt/ros/$ROS_DISTRO/setup.bash && "\
-        "cd ./docs && " \
+        "cd ./docs/user_guide && " \
         "generate_parameter_library_markdown --input_yaml  "$PARAM_FILE_DECLARATION_IN_DOC" --output_markdown_file "$PARAM_FILE_DOC " && "\
-        "cd .."
+        "cd ../.."
         RUN bash -c "$GEN_MD_CMD"
     END
     RUN --no-cache cd ./docs && \
         pipenv install && \
+        pipenv run make html && \
         pipenv run make html && \
         exit && \
         cd ..

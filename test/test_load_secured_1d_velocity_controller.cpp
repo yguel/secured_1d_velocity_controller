@@ -25,8 +25,6 @@
 
 TEST(TestLoadSecured1dVelocityController, load_controller)
 {
-  rclcpp::init(0, nullptr);
-
   std::shared_ptr<rclcpp::Executor> executor =
     std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
 
@@ -40,6 +38,13 @@ TEST(TestLoadSecured1dVelocityController, load_controller)
       "test_secured_1d_velocity_controller",
       "secured_1d_velocity_controller/Secured1dVelocityController"),
     nullptr);
+}
 
+int main(int argc, char ** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  rclcpp::init(argc, argv);
+  int result = RUN_ALL_TESTS();
   rclcpp::shutdown();
+  return result;
 }

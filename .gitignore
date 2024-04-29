@@ -1,3 +1,14 @@
+# Generated doc files
+docs/_build/
+docs/user_guide/configuration_file_for_secured_1d_velocity_controller.yaml
+docs/user_guide/secured_1d_velocity_controller_params.yaml
+docs/user_guide/secured_1d_velocity_controller_parameters.md
+
+# Python pip files
+Pipfile
+Pipfile.lock
+
+
 # Created by https://www.gitignore.io/api/visualstudiocode
 # Edit at https://www.gitignore.io/?templates=visualstudiocode
 
