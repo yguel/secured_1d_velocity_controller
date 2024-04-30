@@ -179,14 +179,379 @@ TEST_F(Secured1dVelocityControllerTest, reactivate_success)
     controller_interface::return_type::OK);
 }
 
-/**
- * MAKES NO SENS
- * ====================================================================================
- *
- */
+double another_value(double value)
+{
+  if (value == 0.0)
+  {
+    return 1.0;
+  }
+  else
+  {
+    return 0.0;
+  }
+}
 
-/*
-TEST_F(Secured1dVelocityControllerTest, test_setting_slow_mode_service)
+TEST_F(Secured1dVelocityControllerTest, update_logic_secure_mode)
+{
+  SetUpController();
+
+  ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
+  ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
+
+  controller_->set_control_mode(control_mode_type::SECURE);
+
+  std::vector<double> state_values = {0.0, 0.0, 0.0};
+  std::vector<double> cmd_values = {0.0};
+
+  double start_active_value = controller_->start_active_value_;
+  double start_inactive_value = another_value(start_active_value);
+  double end_active_value = controller_->end_active_value_;
+  double end_inactive_value = another_value(end_active_value);
+
+  std::shared_ptr<ControllerReferenceMsg> msg = std::make_shared<ControllerReferenceMsg>();
+
+  //==================================================
+  // 1. Test positive velocity and no limit activated
+  //==================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY1 = 23.24;
+  msg->data = TEST_VELOCITY1;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY1);
+
+  //===================================================
+  // 2. Test negative velocity and no limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY2 = -23.24;
+  msg->data = TEST_VELOCITY2;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY2);
+
+  //===================================================
+  // 3. Test positive velocity and start limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY3 = 23.24;
+  msg->data = TEST_VELOCITY3;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_active_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY3);
+
+  //===================================================
+  // 4. Test positive velocity and end limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY4 = 23.24;
+  msg->data = TEST_VELOCITY4;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), 0.);
+
+  //===================================================
+  // 5. Test negative velocity and start limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY5 = -23.24;
+  msg->data = TEST_VELOCITY5;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_active_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), 0.);
+
+  //===================================================
+  // 6. Test negative velocity and end limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY6 = -23.24;
+  msg->data = TEST_VELOCITY6;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY6);
+
+  //=====================================================
+  // 7. Test positive velocity and both limits activated
+  //=====================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY7 = 23.24;
+  msg->data = TEST_VELOCITY7;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_active_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), 0.);
+
+  //=====================================================
+  // 8. Test negative velocity and both limits activated
+  //=====================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY8 = -23.24;
+  msg->data = TEST_VELOCITY8;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_active_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), 0.);
+}
+
+TEST_F(Secured1dVelocityControllerTest, update_logic_insecure_mode)
+{
+  SetUpController();
+
+  ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
+  ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
+
+  controller_->set_control_mode(control_mode_type::INSECURE);
+
+  std::vector<double> state_values = {0.0, 0.0, 0.0};
+  std::vector<double> cmd_values = {0.0};
+
+  double start_active_value = controller_->start_active_value_;
+  double start_inactive_value = another_value(start_active_value);
+  double end_active_value = controller_->end_active_value_;
+  double end_inactive_value = another_value(end_active_value);
+
+  std::shared_ptr<ControllerReferenceMsg> msg = std::make_shared<ControllerReferenceMsg>();
+
+  //==================================================
+  // 1. Test positive velocity and no limit activated
+  //==================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY1 = 23.24;
+  msg->data = TEST_VELOCITY1;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY1);
+
+  //===================================================
+  // 2. Test negative velocity and no limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY2 = -23.24;
+  msg->data = TEST_VELOCITY2;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY2);
+
+  //===================================================
+  // 3. Test positive velocity and start limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY3 = 23.24;
+  msg->data = TEST_VELOCITY3;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_active_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY3);
+
+  //===================================================
+  // 4. Test positive velocity and end limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY4 = 23.24;
+  msg->data = TEST_VELOCITY4;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY4);
+
+  //===================================================
+  // 5. Test negative velocity and start limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY5 = -23.24;
+  msg->data = TEST_VELOCITY5;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_active_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY5);
+
+  //===================================================
+  // 6. Test negative velocity and end limit activated
+  //===================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY6 = -23.24;
+  msg->data = TEST_VELOCITY6;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY6);
+
+  //=====================================================
+  // 7. Test positive velocity and both limits activated
+  //=====================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY7 = 23.24;
+  msg->data = TEST_VELOCITY7;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_active_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY7);
+
+  //=====================================================
+  // 8. Test negative velocity and both limits activated
+  //=====================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY8 = -23.24;
+  msg->data = TEST_VELOCITY8;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_active_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY8);
+}
+
+TEST_F(Secured1dVelocityControllerTest, test_setting_secure_mode_service)
 {
   SetUpController();
 
@@ -194,24 +559,31 @@ TEST_F(Secured1dVelocityControllerTest, test_setting_slow_mode_service)
   executor.add_node(controller_->get_node()->get_node_base_interface());
   executor.add_node(service_caller_node_->get_node_base_interface());
 
-  // initially set to false
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::FAST);
+  // initially set to secure
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
 
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
 
-  // should stay false
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::FAST);
+  // should stay secure
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
 
-  // set to true
-  ASSERT_NO_THROW(call_security_service(true, executor));
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SLOW);
-
-  // set back to false
+  // set to insecure
   ASSERT_NO_THROW(call_security_service(false, executor));
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::FAST);
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::INSECURE);
+
+  // set back to secure
+  ASSERT_NO_THROW(call_security_service(true, executor));
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
 }
 
+/**
+ * MAKES NO SENS
+ * ====================================================================================
+ *
+ */
+
+/*
 TEST_F(Secured1dVelocityControllerTest, test_update_logic_fast)
 {
   SetUpController();

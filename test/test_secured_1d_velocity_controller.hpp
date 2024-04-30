@@ -57,6 +57,8 @@ class TestableSecured1dVelocityController
   FRIEND_TEST(Secured1dVelocityControllerTest, all_parameters_set_configure_success);
   FRIEND_TEST(Secured1dVelocityControllerTest, activate_success);
   FRIEND_TEST(Secured1dVelocityControllerTest, reactivate_success);
+  FRIEND_TEST(Secured1dVelocityControllerTest, update_logic_secure_mode);
+  FRIEND_TEST(Secured1dVelocityControllerTest, update_logic_insecure_mode);
 
 public:
   controller_interface::CallbackReturn on_configure(
@@ -170,6 +172,59 @@ protected:
     // Copy the interfaces to the controller (commands and states)
     //============================================================
     controller_->assign_interfaces(std::move(command_ifs), std::move(state_ifs));
+  }
+
+  template <typename VEC1, typename VEC2>
+  void mock_interfaces(VEC1 & states, VEC2 & cmds)
+  {
+    ASSERT_EQ(states.size(), state_values_.size());
+    ASSERT_EQ(cmds.size(), reference_command_values_.size());
+
+    // Setup command interfaces
+    //=========================
+    std::vector<hardware_interface::LoanedCommandInterface> command_ifs;
+    command_itfs_.reserve(reference_command_values_.size());
+    command_ifs.reserve(reference_command_values_.size());
+
+    {  // One joint, one command interface
+      // Set one valid command interface value
+      command_itfs_.emplace_back(hardware_interface::CommandInterface(
+        joint_name_, hardware_interface::HW_IF_VELOCITY, &cmds[CMD_V_ITFS]));
+      command_ifs.emplace_back(command_itfs_.back());
+    }
+
+    // Setup state interfaces
+    //=======================
+    std::vector<hardware_interface::LoanedStateInterface> state_ifs;
+    state_itfs_.reserve(state_values_.size());
+    state_ifs.reserve(state_values_.size());
+
+    for (size_t i = 0; i < state_values_.size(); ++i)
+    {
+      state_itfs_.emplace_back(hardware_interface::StateInterface(
+        state_base_names_[i], state_interface_names_[i], &states[i]));
+      state_ifs.emplace_back(state_itfs_.back());
+    }
+
+    // Copy the interfaces to the controller (commands and states)
+    //============================================================
+    controller_->assign_interfaces(std::move(command_ifs), std::move(state_ifs));
+  }
+
+  template <typename VEC>
+  void mock_states(VEC & states)
+  {
+    ASSERT_EQ(states.size(), state_values_.size());
+
+    mock_interfaces(states, reference_command_values_);
+  }
+
+  template <typename VEC>
+  void mock_commands(VEC & cmds)
+  {
+    ASSERT_EQ(cmds.size(), reference_command_values_.size());
+
+    mock_interfaces(state_values_, cmds);
   }
 
   void subscribe_and_get_messages(ControllerStateMsg & msg)

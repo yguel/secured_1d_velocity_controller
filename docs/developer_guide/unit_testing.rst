@@ -25,32 +25,83 @@ Tests for behavioral correctness
 Test if limits are enforced when the secure mode is set to ``SECURE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The test load the controller with the configuration file ``test/secured_1d_velocity_controller_params.yaml`` and set the secure mode to ``SECURE``.
+The test is named ``update_logic_secure_mode``.
 
-Then the test performs 2 tests:
+The test loads the controller with the configuration file ``test/secured_1d_velocity_controller_params.yaml`` and set the secure mode to ``SECURE``.
 
-1. The test mocks the start limit being activated.
-2. A negative velocity command is sent to the controller.
-3. It **tests** that a zero velocity command is sent to the controller.
+Then the test performs 8 tests:
 
-1. The test mocks the end limit being activated.
-2. A positive velocity command is sent to the controller.
-3. It **tests** that a zero velocity command is sent to the controller.
+1. Tests positive velocity and no limit activated
+   1. The test sends a positive velocity command to the controller.
+   2. It **tests** that the same velocity command is sent to the joint.
+2. Tests negative velocity and no limit activated
+   1. The test sends a negative velocity command to the controller.
+   2. It **tests** that the same velocity command is sent to the joint.
+3. Tests positive velocity and start limit activated:
+   1. The test mocks the start limit being activated
+   2. It sends a positive velocity command to the controller.
+   3. It **tests** that the same velocity command is sent to the controller.
+4. Tests positive velocity and end limit activated
+   1. The test mocks the end limit being activated.
+   2. A positive velocity command is sent to the controller.
+   3. It **tests** that a zero velocity command is sent to the controller.
+5. Tests negative velocity and start limit activated
+   1. The test mocks the start limit being activated.
+   2. A negative velocity command is sent to the controller.
+   3. It **tests** that a zero velocity command is sent to the controller.
+6. Tests negative velocity and end limit activated
+   1. The test mocks the end limit being activated.
+   2. A negative velocity command is sent to the controller.
+   3. It **tests** that the same velocity command is sent to the controller.
+7. Tests positive velocity and both limits activated
+   1. The test mocks the start limit and the end limit being activated.
+   2. A positive velocity command is sent to the controller.
+   3. It **tests** that a zero velocity command is sent to the controller.
+8. Tests negative velocity and both limits activated.
+   1. The test mocks the start limit and the end limit being activated.
+   2. A negative velocity command is sent to the controller.
+   3. It **tests** that a zero velocity command is sent to the controller.
+
 
 Test if limits are ignored when the secure mode is set to ``INSECURE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The test load the controller with the configuration file ``test/secured_1d_velocity_controller_params.yaml`` and set the secure mode to ``INSECURE``.
+The test is named ``update_logic_insecure_mode``.
 
-Then the test performs 2 tests:
+The test loads the controller with the configuration file ``test/secured_1d_velocity_controller_params.yaml`` and set the secure mode to ``INSECURE``.
 
-1. The test mocks the start limit being activated.
-2. A negative velocity :math:`\alpha` is sent to command the controller.
-3. It **tests** that the velocity :math:`\alpha` is sent to command the joint.
+Then the test performs 8 tests:
 
-1. The test mocks the end limit being activated.
-2. A positive velocity :math:`\alpha` is sent to command the controller.
-3. It **tests** that the velocity :math:`\alpha` is sent to command the joint.
+1. Tests positive velocity and no limit activated
+   1. The test sends a positive velocity command to the controller.
+   2. It **tests** that the same velocity command is sent to the joint.
+2. Tests negative velocity and no limit activated
+   1. The test sends a negative velocity command to the controller.
+   2. It **tests** that the same velocity command is sent to the joint.
+3. Tests positive velocity and start limit activated:
+   1. The test mocks the start limit being activated
+   2. It sends a positive velocity command to the controller.
+   3. It **tests** that the same velocity command is sent to the controller.
+4. Tests positive velocity and end limit activated
+   1. The test mocks the end limit being activated.
+   2. A positive velocity command is sent to the controller.
+   3.  It **tests** that the same velocity command is sent to the controller.
+5. Tests negative velocity and start limit activated
+   1.  The test mocks the start limit being activated.
+   2. A negative velocity command is sent to the controller.
+   3. It **tests** that the same velocity command is sent to the controller.
+6. Tests negative velocity and end limit activated
+   1. The test mocks the end limit being activated.
+   2. A negative velocity command is sent to the controller.
+   3. It **tests** that the same velocity command is sent to the controller.
+7. Tests positive velocity and both limits activated
+   1. The test mocks the start limit and the end limit being activated.
+   2. A positive velocity command is sent to the controller.
+   3. It **tests** that the same velocity command is sent to the controller.
+8. Tests negative velocity and both limits activated.
+   1. The test mocks the start limit and the end limit being activated.
+   2. A negative velocity command is sent to the controller.
+   3. It **tests** that the same velocity command is sent to the controller.
 
 ........................................................................
 
