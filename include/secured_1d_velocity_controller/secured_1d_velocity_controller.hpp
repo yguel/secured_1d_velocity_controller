@@ -21,12 +21,12 @@
 #include <string>
 #include <vector>
 
-#include "control_msgs/msg/joint_controller_state.hpp"
 #include "controller_interface/controller_interface.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "realtime_tools/realtime_buffer.h"
 #include "realtime_tools/realtime_publisher.h"
+#include "secured_1d_control_interfaces/msg/secured_single_dof_state.hpp"
 #include "secured_1d_velocity_controller/visibility_control.h"
 #include "secured_1d_velocity_controller_parameters.hpp"
 #include "std_msgs/msg/float64.hpp"
@@ -92,7 +92,7 @@ public:
   // Service message type definition
   using ControllerModeSrvType = std_srvs::srv::SetBool;
   // State message type definition
-  using ControllerStateMsg = control_msgs::msg::JointControllerState;
+  using ControllerStateMsg = secured_1d_control_interfaces::msg::SecuredSingleDOFState;
 
 protected:
   std::shared_ptr<secured_1d_velocity_controller::ParamListener> param_listener_;
@@ -107,15 +107,79 @@ protected:
   rclcpp::Subscription<ControllerReferenceMsg>::SharedPtr ref_subscriber_ = nullptr;
   realtime_tools::RealtimeBuffer<std::shared_ptr<ControllerReferenceMsg>> input_ref_;
 
-  // Service responsible for the setup of the control mode
-  rclcpp::Service<ControllerModeSrvType>::SharedPtr set_secure_;
-  rclcpp::Service<ControllerModeSrvType>::SharedPtr set_log_;
+  // Services responsible for the setup of the control mode
+  rclcpp::Service<ControllerModeSrvType>::SharedPtr set_secure_mode_service_;
+  rclcpp::Service<ControllerModeSrvType>::SharedPtr set_log_mode_service_;
   realtime_tools::RealtimeBuffer<control_mode_type> control_mode_;
 
+  // Controller State publisher
   using ControllerStatePublisher = realtime_tools::RealtimePublisher<ControllerStateMsg>;
 
   rclcpp::Publisher<ControllerStateMsg>::SharedPtr s_publisher_;
   std::unique_ptr<ControllerStatePublisher> state_publisher_;
+
+protected:
+  inline void modify_secure_mode(const bool set_secure_mode)
+  {
+    control_mode_type mode = control_mode_.readFromNonRT();
+    if (set_secure_mode)
+    {
+      if (mode == control_mode_type::INSECURE)
+      {
+        mode = control_mode_type::SECURE;
+        control_mode_.writeFromNonRT(mode);
+      }
+      else if (mode == control_mode_type::INSECURE_AND_LOG)
+      {
+        mode = control_mode_type::SECURE_AND_LOG;
+        control_mode_.writeFromNonRT(mode);
+      }
+    }
+    else
+    {
+      if (mode == control_mode_type::SECURE)
+      {
+        mode = control_mode_type::INSECURE;
+        control_mode_.writeFromNonRT(mode);
+      }
+      else if (mode == control_mode_type::SECURE_AND_LOG)
+      {
+        mode = control_mode_type::INSECURE_AND_LOG;
+        control_mode_.writeFromNonRT(mode);
+      }
+    }
+  }
+
+  inline void modify_log_mode(const bool set_log_mode)
+  {
+    control_mode_type mode = control_mode_.readFromNonRT();
+    if (set_log_mode)
+    {
+      if (mode == control_mode_type::SECURE)
+      {
+        mode = control_mode_type::SECURE_AND_LOG;
+        control_mode_.writeFromNonRT(mode);
+      }
+      else if (mode == control_mode_type::INSECURE)
+      {
+        mode = control_mode_type::INSECURE_AND_LOG;
+        control_mode_.writeFromNonRT(mode);
+      }
+    }
+    else
+    {
+      if (mode == control_mode_type::SECURE_AND_LOG)
+      {
+        mode = control_mode_type::SECURE;
+        control_mode_.writeFromNonRT(mode);
+      }
+      else if (mode == control_mode_type::INSECURE_AND_LOG)
+      {
+        mode = control_mode_type::INSECURE;
+        control_mode_.writeFromNonRT(mode);
+      }
+    }
+  }
 
 protected:
   inline double admissible_velocity(
@@ -162,6 +226,10 @@ protected:
     const double reference_velocity, const double current_velocity, const bool start_limit_active,
     const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
 
+  controller_interface::return_type (Secured1dVelocityController::*update_method_ptr2_)(
+    const double reference_velocity, const double current_velocity, const bool start_limit_active,
+    const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
+
   // update methods
   controller_interface::return_type update_secure(
     const double reference_velocity, const double current_velocity, const bool start_limit_active,
@@ -176,6 +244,10 @@ protected:
     const double reference_velocity, const double current_velocity, const bool start_limit_active,
     const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
 
+  controller_interface::return_type update_with_state_published(
+    const double reference_velocity, const double current_velocity, const bool start_limit_active,
+    const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period);
+
   // Log methods
   void record_limit_switch_state(bool limit_left_active, bool limit_right_active);
   void log_blocked_velocity_command(
@@ -183,6 +255,8 @@ protected:
 
 protected:
   void set_control_mode(const control_mode_type mode);
+  bool secured_mode_ = true;
+  bool log_mode_ = false;
 
 private:
   // callback for topic interface

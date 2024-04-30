@@ -193,7 +193,7 @@ double another_value(double value)
 
 TEST_F(Secured1dVelocityControllerTest, update_logic_secure_mode)
 {
-  SetUpController();
+  SetUpController("test_secured_1d_velocity_controller", false /*publish_state*/);
 
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
@@ -373,7 +373,7 @@ TEST_F(Secured1dVelocityControllerTest, update_logic_secure_mode)
 
 TEST_F(Secured1dVelocityControllerTest, update_logic_insecure_mode)
 {
-  SetUpController();
+  SetUpController("test_secured_1d_velocity_controller", false /*publish_state*/);
 
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
@@ -553,6 +553,32 @@ TEST_F(Secured1dVelocityControllerTest, update_logic_insecure_mode)
 
 TEST_F(Secured1dVelocityControllerTest, test_setting_secure_mode_service)
 {
+  SetUpController("test_secured_1d_velocity_controller", false /*publish_state*/);
+
+  rclcpp::executors::MultiThreadedExecutor executor;
+  executor.add_node(controller_->get_node()->get_node_base_interface());
+  executor.add_node(service_caller_node_->get_node_base_interface());
+
+  // initially set to secure
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
+
+  ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
+  ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
+
+  // should stay secure
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
+
+  // set to insecure
+  ASSERT_NO_THROW(call_security_service(false, executor));
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::INSECURE);
+
+  // set back to secure
+  ASSERT_NO_THROW(call_security_service(true, executor));
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
+}
+
+TEST_F(Secured1dVelocityControllerTest, test_setting_secure_mode_service_while_publishing_status)
+{
   SetUpController();
 
   rclcpp::executors::MultiThreadedExecutor executor;
@@ -577,80 +603,6 @@ TEST_F(Secured1dVelocityControllerTest, test_setting_secure_mode_service)
   ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
 }
 
-/**
- * MAKES NO SENS
- * ====================================================================================
- *
- */
-
-/*
-TEST_F(Secured1dVelocityControllerTest, test_update_logic_fast)
-{
-  SetUpController();
-  rclcpp::executors::MultiThreadedExecutor executor;
-  executor.add_node(controller_->get_node()->get_node_base_interface());
-  executor.add_node(service_caller_node_->get_node_base_interface());
-
-  ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
-  ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
-
-  // set command statically
-  static constexpr double TEST_DISPLACEMENT = 23.24;
-  std::shared_ptr<ControllerReferenceMsg> msg = std::make_shared<ControllerReferenceMsg>();
-  msg->joint_names = joint_names_;
-  msg->displacements.resize(joint_names_.size(), TEST_DISPLACEMENT);
-  msg->velocities.resize(joint_names_.size(), std::numeric_limits<double>::quiet_NaN());
-  msg->duration = std::numeric_limits<double>::quiet_NaN();
-  controller_->input_ref_.writeFromNonRT(msg);
-
-  ASSERT_EQ(
-    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
-    controller_interface::return_type::OK);
-
-  EXPECT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::FAST);
-  EXPECT_EQ(joint_command_values_[STATE_MY_ITFS], TEST_DISPLACEMENT);
-  EXPECT_TRUE(std::isnan((*(controller_->input_ref_.readFromRT()))->displacements[0]));
-  EXPECT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::FAST);
-}
-
-TEST_F(Secured1dVelocityControllerTest, test_update_logic_slow)
-{
-  SetUpController();
-  rclcpp::executors::MultiThreadedExecutor executor;
-  executor.add_node(controller_->get_node()->get_node_base_interface());
-  executor.add_node(service_caller_node_->get_node_base_interface());
-
-  ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
-  ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
-
-  // set command statically
-  static constexpr double TEST_DISPLACEMENT = 23.24;
-  std::shared_ptr<ControllerReferenceMsg> msg = std::make_shared<ControllerReferenceMsg>();
-  // When slow mode is enabled command ends up being half of the value
-  msg->joint_names = joint_names_;
-  msg->displacements.resize(joint_names_.size(), TEST_DISPLACEMENT);
-  msg->velocities.resize(joint_names_.size(), std::numeric_limits<double>::quiet_NaN());
-  msg->duration = std::numeric_limits<double>::quiet_NaN();
-  controller_->input_ref_.writeFromNonRT(msg);
-  controller_->control_mode_.writeFromNonRT(control_mode_type::SLOW);
-
-  EXPECT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SLOW);
-  ASSERT_EQ((*(controller_->input_ref_.readFromRT()))->displacements[0], TEST_DISPLACEMENT);
-  ASSERT_EQ(
-    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
-    controller_interface::return_type::OK);
-
-  EXPECT_EQ(joint_command_values_[STATE_MY_ITFS], TEST_DISPLACEMENT / 2);
-  EXPECT_TRUE(std::isnan((*(controller_->input_ref_.readFromRT()))->displacements[0]));
-}
-*/
-
-/**
- * End of MAKES NO SENS
- * ====================================================================================
- */
-
-/**
 TEST_F(Secured1dVelocityControllerTest, publish_status_success)
 {
   SetUpController();
@@ -658,16 +610,69 @@ TEST_F(Secured1dVelocityControllerTest, publish_status_success)
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
 
+  controller_->set_control_mode(control_mode_type::SECURE);
+
+  std::vector<double> state_values = {0.0, 0.0, 0.0};
+  std::vector<double> cmd_values = {0.0};
+
+  double start_active_value = controller_->start_active_value_;
+  double start_inactive_value = another_value(start_active_value);
+  double end_active_value = controller_->end_active_value_;
+  double end_inactive_value = another_value(end_active_value);
+
+  std::shared_ptr<ControllerReferenceMsg> msg = std::make_shared<ControllerReferenceMsg>();
+  ControllerStateMsg msg;
+
+  //================================================================
+  // 1. Test positive velocity and no limit activated (SECURED MODE)
+  //================================================================
+
+  // set command statically
+  static constexpr double TEST_VELOCITY1 = 23.24;
+  msg->data = TEST_VELOCITY1;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
   ASSERT_EQ(
     controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
     controller_interface::return_type::OK);
 
-  ControllerStateMsg msg;
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY1);
+
   subscribe_and_get_messages(msg);
 
-  ASSERT_EQ(msg.set_point, 101.101);
+  ASSERT_EQ(msg.set_point, TEST_VELOCITY1);
+  ASSERT_EQ(msg.secured_mode, true);
+  ASSERT_EQ(msg.security_enabled, false);
+
+  /** TODO check
+    //==================================================================
+    // 4. Test positive velocity and end limit activated (SECURED MODE)
+    //==================================================================
+
+    // set command statically
+    static constexpr double TEST_VELOCITY4 = 23.24;
+    msg->data = TEST_VELOCITY4;
+    controller_->input_ref_.writeFromNonRT(msg);
+
+    // set state values for limits
+    state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+    state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+    mock_states(state_values);
+
+    ASSERT_EQ(
+      controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+      controller_interface::return_type::OK);
+
+    EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), 0.);
+    */
 }
 
+/**
 TEST_F(Secured1dVelocityControllerTest, receive_message_and_publish_updated_status)
 {
   SetUpController();

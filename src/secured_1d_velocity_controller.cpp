@@ -82,26 +82,82 @@ void Secured1dVelocityController::set_control_mode(const control_mode_type mode)
   switch (mode)
   {
     case control_mode_type::SECURE:
-      update_method_ptr_ = &Secured1dVelocityController::update_secure;
+    {
+      if (params_.publish_state)
+      {
+        update_method_ptr_ = &Secured1dVelocityController::update_with_state_published;
+        update_method_ptr2_ = &Secured1dVelocityController::update_secure;
+      }
+      else
+      {
+        update_method_ptr_ = &Secured1dVelocityController::update_secure;
+        update_method_ptr2_ = nullptr;
+      }
       log_prefix_ = std::string("");
+      secured_mode_ = true;
+      log_mode_ = false;
       break;
+    }
     case control_mode_type::INSECURE:
-      update_method_ptr_ = &Secured1dVelocityController::update_insecure;
+    {
+      if (params_.publish_state)
+      {
+        update_method_ptr_ = &Secured1dVelocityController::update_with_state_published;
+        update_method_ptr2_ = &Secured1dVelocityController::update_insecure;
+      }
+      else
+      {
+        update_method_ptr_ = &Secured1dVelocityController::update_insecure;
+        update_method_ptr2_ = nullptr;
+      }
       log_prefix_ = std::string("");
+      secured_mode_ = false;
+      log_mode_ = false;
       break;
+    }
     case control_mode_type::SECURE_AND_LOG:
-      update_method_ptr_ = &Secured1dVelocityController::update_secure_and_log;
+    {
+      if (params_.publish_state)
+      {
+        update_method_ptr_ = &Secured1dVelocityController::update_with_state_published;
+        update_method_ptr2_ = &Secured1dVelocityController::update_secure_and_log;
+      }
+      else
+      {
+        update_method_ptr_ = &Secured1dVelocityController::update_secure_and_log;
+        update_method_ptr2_ = nullptr;
+      }
       log_prefix_ = std::string("");
+      secured_mode_ = true;
+      log_mode_ = true;
       break;
+    }
     case control_mode_type::INSECURE_AND_LOG:
-      update_method_ptr_ = &Secured1dVelocityController::update_insecure_and_log;
+    {
+      if (params_.publish_state)
+      {
+        update_method_ptr_ = &Secured1dVelocityController::update_with_state_published;
+        update_method_ptr2_ = &Secured1dVelocityController::update_insecure_and_log;
+      }
+      else
+      {
+        update_method_ptr_ = &Secured1dVelocityController::update_insecure_and_log;
+        update_method_ptr2_ = nullptr;
+      }
       log_prefix_ = std::string("Insecure mode, should have ");
+      secured_mode_ = false;
+      log_mode_ = true;
       break;
+    }
     default:
+    {
       RCLCPP_ERROR(get_node()->get_logger(), "Unknown control mode");
       update_method_ptr_ = &Secured1dVelocityController::update_secure;
       log_prefix_ = std::string("");
+      secured_mode_ = true;
+      log_mode_ = false;
       break;
+    }
   }
 
   control_mode_.writeFromNonRT(mode);
@@ -131,47 +187,62 @@ controller_interface::CallbackReturn Secured1dVelocityController::on_configure(
   // Set the default control mode
   set_control_mode(control_mode_type::SECURE);
 
-  /*
-  auto set_control_mode_service_callback =
+  auto set_secure_mode_service_callback =
     [&](
       const std::shared_ptr<ControllerModeSrvType::Request> request,
       std::shared_ptr<ControllerModeSrvType::Response> response)
   {
-    if (request->data)
-    {
-      control_mode_.writeFromNonRT(control_mode_type::SLOW);
-    }
-    else
-    {
-      control_mode_.writeFromNonRT(control_mode_type::FAST);
-    }
+    modify_secure_mode(request->data);
     response->success = true;
   };
 
-  set_velocity_sign_security_mode_service_ = get_node()->create_service<ControllerModeSrvType>(
-    "~/set_velocity_sign_security_mode", set_velocity_sign_security_mode_service_callback,
+  auto set_log_mode_service_callback =
+    [&](
+      const std::shared_ptr<ControllerModeSrvType::Request> request,
+      std::shared_ptr<ControllerModeSrvType::Response> response)
+  {
+    modify_log_mode(request->data);
+    response->success = true;
+  };
+
+  /* Define the service responsible to set in secure mode */
+  std::string security_mode_service_name =
+    std::string("~/") + params_.security_mode_service.service;
+  set_secure_mode_service_ = get_node()->create_service<ControllerModeSrvType>(
+    security_mode_service_name, set_secure_mode_service_callback,
     rmw_qos_profile_services_hist_keep_all);
 
-  try
-  {
-    // State publisher
-    s_publisher_ =
-      get_node()->create_publisher<ControllerStateMsg>("~/state", rclcpp::SystemDefaultsQoS());
-    state_publisher_ = std::make_unique<ControllerStatePublisher>(s_publisher_);
-  }
-  catch (const std::exception & e)
-  {
-    fprintf(
-      stderr, "Exception thrown during publisher creation at configure stage with message : %s \n",
-      e.what());
-    return controller_interface::CallbackReturn::ERROR;
-  }
+  /* Define the service responsible to set in log mode */
+  std::string log_mode_service_name = std::string("~/") + params_.log_mode_service.service;
+  set_log_mode_service_ = get_node()->create_service<ControllerModeSrvType>(
+    log_mode_service_name, set_log_mode_service_callback, rmw_qos_profile_services_hist_keep_all);
 
-  // TODO(anyone): Reserve memory in state publisher depending on the message type
-  state_publisher_->lock();
-  state_publisher_->msg_.header.frame_id = params_.joints[0];
-  state_publisher_->unlock();
-  */
+  /* State publisher */
+  if (params_.publish_state)
+  {
+    try
+    {
+      // State publisher
+      s_publisher_ =
+        get_node()->create_publisher<ControllerStateMsg>("~/status", rclcpp::SystemDefaultsQoS());
+      state_publisher_ = std::make_unique<ControllerStatePublisher>(s_publisher_);
+    }
+    catch (const std::exception & e)
+    {
+      fprintf(
+        stderr,
+        "Exception thrown during publisher creation at configure stage with message : %s \n",
+        e.what());
+      return controller_interface::CallbackReturn::ERROR;
+    }
+
+    state_publisher_->lock();
+    state_publisher_->msg_.header.frame_id = params_.joint;
+    state_publisher_->unlock();
+
+    // Set the update method to the one that publishes the state
+    update_method_ptr_ = &Secured1dVelocityController::update_with_state_published;
+  }
 
   // topics QoS
   auto subscribers_qos = rclcpp::SystemDefaultsQoS();
@@ -376,23 +447,60 @@ controller_interface::return_type Secured1dVelocityController::update_insecure_a
   const double reference_velocity, const double current_velocity, const bool start_limit_active,
   const bool end_limit_active, const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
+  bool blocked = false;
+
   if (start_limit_active && end_limit_active)
   {
     // Both limit switches are active (that is very bad!), set velocity to 0.0
     RCLCPP_WARN(get_node()->get_logger(), "Both limit switches are active");
     record_limit_switch_state(start_limit_active, end_limit_active);
+    blocked = true;
   }
   else
   {
-    bool blocked = false;
     admissible_velocity_log(start_limit_active, end_limit_active, reference_velocity, blocked);
     record_limit_switch_state(start_limit_active, end_limit_active);
-    // Intelligent log the blocked state of the velocity
-    log_blocked_velocity_command(blocked, reference_velocity, current_velocity);
   }
+
+  // Intelligent log the blocked state of the velocity
+  log_blocked_velocity_command(blocked, reference_velocity, current_velocity);
 
   command_interfaces_[CMD_V_ITFS].set_value(reference_velocity);
   return controller_interface::return_type::OK;
+}
+
+controller_interface::return_type Secured1dVelocityController::update_with_state_published(
+  const double reference_velocity, const double current_velocity, const bool start_limit_active,
+  const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period)
+{
+#define METHOD_POINTER_CALL(ptrToMethod) (this->*(ptrToMethod))
+  controller_interface::return_type ret = METHOD_POINTER_CALL(update_method_ptr2_)(
+    current_ref, current_velocity, start_limit_active, end_limit_active, time, period);
+#undef METHOD_POINTER_CALL
+
+  double computed_ref = command_interfaces_[CMD_V_ITFS].get_value();
+
+  bool security_triggered = false;
+  // Check if the computed reference is different from the reference velocity
+  // If it is different, then the security has been triggered because otherwise
+  // the controller just forwards the reference velocity
+  if (computed_ref != reference_velocity)
+  {
+    security_triggered = true;
+  }
+
+  // Publish controller state
+  state_publisher_->lock();
+  state_publisher_->msg_.dof_state.header.stamp = time;
+  state_publisher_->msg_.dof_state.set_point = reference_velocity;
+  state_publisher_->msg_.dof_state.process_value = current_velocity;
+  state_publisher_->msg_.dof_state.error = current_velocity - reference_velocity;
+  state_publisher_->msg_.dof_state.command = computed_ref;
+  state_publisher_->msg_.secured_mode = secured_mode_;
+  state_publisher_->msg_.security_triggered = security_triggered;
+  state_publisher_->unlockAndPublish();
+
+  return ret;
 }
 
 controller_interface::return_type Secured1dVelocityController::update(

@@ -15,7 +15,8 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     rclcpp_lifecycle
     realtime_tools
     std_msgs
-    std_srvs)
+    std_srvs
+    secured_1d_control_interfaces)
 
 find_package(ament_cmake REQUIRED)
 find_package(backward_ros REQUIRED)

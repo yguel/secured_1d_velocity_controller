@@ -9,6 +9,7 @@ test_secured_1d_velocity_controller:
       active_value: 0.0
     reference_topic: velocity_command
     zero_velocity_tolerance: 0.0002
+    publish_state: true
     security_mode_service:
       default_mode: SECURE
       service: set_security_mode

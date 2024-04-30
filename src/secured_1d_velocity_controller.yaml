@@ -57,6 +57,14 @@ secured_1d_velocity_controller:
       read_only: true,
       validation: { gt<>: 0.0 },
     }
+  publish_state:
+    {
+      type: bool,
+      default_value: false,
+      description: "Flag used to enable or disable the publication of the state of the controller",
+      read_only: true,
+      validation: {},
+    }
   security_mode_service:
     default_mode:
       {

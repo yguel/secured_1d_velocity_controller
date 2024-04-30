@@ -139,7 +139,9 @@ public:
   void TearDown() { controller_.reset(nullptr); }
 
 protected:
-  void SetUpController(const std::string controller_name = "test_secured_1d_velocity_controller")
+  void SetUpController(
+    const std::string controller_name = "test_secured_1d_velocity_controller",
+    bool publish_state = false)
   {
     ASSERT_EQ(controller_->init(controller_name), controller_interface::return_type::OK);
 
@@ -172,6 +174,9 @@ protected:
     // Copy the interfaces to the controller (commands and states)
     //============================================================
     controller_->assign_interfaces(std::move(command_ifs), std::move(state_ifs));
+
+    // Change the publish_state parameter disregarding the value set in the parameter file
+    controller_->params_.publish_state = publish_state;
   }
 
   template <typename VEC1, typename VEC2>
