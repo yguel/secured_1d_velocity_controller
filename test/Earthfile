@@ -1,6 +1,18 @@
 VERSION 0.8
 # Documentation checks and build instructions for CI/CD
 
+# HOWTO run tests
+# ===============
+## You can launch the tests with the following command in your ros2 workspace from a terminal:
+##$ colcon test --ctest-args tests --packages-select  secured_1d_velocity_controller
+
+## You can see the results of the tests with the following command:
+##$ colcon test-result --verbose --test-result-base build/secured_1d_velocity_controller
+
+# HOWTO run earthly CI locally
+#=============================
+##  earthly --artifact --secret GIT_TOKEN=YOUR_GIT_TOKEN +test-results --GIT_REPO_URL="github.com/yguel/secured_1d_velocity_controller" --HTTPS=true --PLATFORM="github" --CTRLER_NAME="secured_1d_velocity_controller"
+
 # The docker image the build will run in
 FROM ubuntu:22.04
 WORKDIR /earthly_workdir

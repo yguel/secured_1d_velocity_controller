@@ -77,6 +77,33 @@ controller_interface::CallbackReturn Secured1dVelocityController::on_init()
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
+control_mode_type Secured1dVelocityController::define_control_mode(
+  const bool security_enabled, const bool log_enabled) const
+{
+  if (security_enabled)
+  {
+    if (log_enabled)
+    {
+      return control_mode_type::SECURE_AND_LOG;
+    }
+    else
+    {
+      return control_mode_type::SECURE;
+    }
+  }
+  else
+  {
+    if (log_enabled)
+    {
+      return control_mode_type::INSECURE_AND_LOG;
+    }
+    else
+    {
+      return control_mode_type::INSECURE;
+    }
+  }
+}
+
 void Secured1dVelocityController::set_control_mode(const control_mode_type mode)
 {
   switch (mode)
@@ -163,6 +190,43 @@ void Secured1dVelocityController::set_control_mode(const control_mode_type mode)
   control_mode_.writeFromNonRT(mode);
 }
 
+void Secured1dVelocityController::set_publish_state(bool publish_state)
+{
+  params_.publish_state = publish_state;
+  set_control_mode(*(control_mode_.readFromNonRT()));
+}
+
+bool Secured1dVelocityController::setup_state_publisher()
+{
+  if (params_.publish_state)
+  {
+    try
+    {
+      // State publisher
+      s_publisher_ =
+        get_node()->create_publisher<ControllerStateMsg>("~/status", rclcpp::SystemDefaultsQoS());
+      state_publisher_ = std::make_unique<ControllerStatePublisher>(s_publisher_);
+    }
+    catch (const std::exception & e)
+    {
+      fprintf(
+        stderr,
+        "Exception thrown during publisher creation at configure stage with message : %s \n",
+        e.what());
+      return false;
+    }
+
+    state_publisher_->lock();
+    state_publisher_->msg_.dof_state.header.frame_id = params_.joint;
+    state_publisher_->unlock();
+
+    // Set the update method to the one that publishes the state
+    set_control_mode(*(control_mode_.readFromNonRT()));
+    return true;
+  }
+  return true;
+}
+
 controller_interface::CallbackReturn Secured1dVelocityController::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
@@ -184,9 +248,7 @@ controller_interface::CallbackReturn Secured1dVelocityController::on_configure(
     return controller_interface::CallbackReturn::FAILURE;
   }
 
-  // Set the default control mode
-  set_control_mode(control_mode_type::SECURE);
-
+  // Define the services callbacks
   auto set_secure_mode_service_callback =
     [&](
       const std::shared_ptr<ControllerModeSrvType::Request> request,
@@ -217,31 +279,25 @@ controller_interface::CallbackReturn Secured1dVelocityController::on_configure(
   set_log_mode_service_ = get_node()->create_service<ControllerModeSrvType>(
     log_mode_service_name, set_log_mode_service_callback, rmw_qos_profile_services_hist_keep_all);
 
-  /* State publisher */
-  if (params_.publish_state)
+  // Set the control mode
+  bool security_enabled = true;
+  if (std::string("INSECURE") == params_.security_mode_service.default_mode)
   {
-    try
-    {
-      // State publisher
-      s_publisher_ =
-        get_node()->create_publisher<ControllerStateMsg>("~/status", rclcpp::SystemDefaultsQoS());
-      state_publisher_ = std::make_unique<ControllerStatePublisher>(s_publisher_);
-    }
-    catch (const std::exception & e)
-    {
-      fprintf(
-        stderr,
-        "Exception thrown during publisher creation at configure stage with message : %s \n",
-        e.what());
-      return controller_interface::CallbackReturn::ERROR;
-    }
+    security_enabled = false;
+  }
+  bool log_enabled = false;
+  if (std::string("LOG") == params_.log_mode_service.default_mode)
+  {
+    log_enabled = true;
+  }
+  control_mode_type mode = define_control_mode(security_enabled, log_enabled);
+  control_mode_.writeFromNonRT(mode);
+  set_control_mode(mode);
 
-    state_publisher_->lock();
-    state_publisher_->msg_.header.frame_id = params_.joint;
-    state_publisher_->unlock();
-
-    // Set the update method to the one that publishes the state
-    update_method_ptr_ = &Secured1dVelocityController::update_with_state_published;
+  // State publisher
+  if (!setup_state_publisher())
+  {
+    return controller_interface::CallbackReturn::ERROR;
   }
 
   // topics QoS
@@ -473,9 +529,10 @@ controller_interface::return_type Secured1dVelocityController::update_with_state
   const double reference_velocity, const double current_velocity, const bool start_limit_active,
   const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period)
 {
+  std::cout << "update_with_state_published" << std::endl;
 #define METHOD_POINTER_CALL(ptrToMethod) (this->*(ptrToMethod))
   controller_interface::return_type ret = METHOD_POINTER_CALL(update_method_ptr2_)(
-    current_ref, current_velocity, start_limit_active, end_limit_active, time, period);
+    reference_velocity, current_velocity, start_limit_active, end_limit_active, time, period);
 #undef METHOD_POINTER_CALL
 
   double computed_ref = command_interfaces_[CMD_V_ITFS].get_value();

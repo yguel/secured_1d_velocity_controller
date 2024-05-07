@@ -13,6 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// clang-format off
+/**
+ * Compile uniquely tests of this package:
+ *   colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --packages-select
+ * secured_1d_velocity_controller Execute uniquely one test of the test suite of this file (choose
+ * in gtest_filter which test to run, here example with publish_status_success the star at the
+ * beginning is important):
+ *  ./build/secured_1d_velocity_controller/test_secured_1d_velocity_controller --ros-args --params-file ./src/secured_1d_velocity_controller/test/secured_1d_velocity_controller_params.yaml -- --gtest_output=xml:./build/secured_1d_velocity_controller/test_results/secured_1d_velocity_controller/test_secured_1d_velocity_controller.gtest.xml --gtest_filter=*publish_status_success
+*/
+// clang-format on
+
 #include "test_secured_1d_velocity_controller.hpp"
 
 #include <limits>
@@ -551,39 +562,44 @@ TEST_F(Secured1dVelocityControllerTest, update_logic_insecure_mode)
   EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY8);
 }
 
-TEST_F(Secured1dVelocityControllerTest, test_setting_secure_mode_service)
+TEST_F(Secured1dVelocityControllerTest, setting_secure_mode_service)
 {
   SetUpController("test_secured_1d_velocity_controller", false /*publish_state*/);
-
-  rclcpp::executors::MultiThreadedExecutor executor;
+  rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(controller_->get_node()->get_node_base_interface());
-  executor.add_node(service_caller_node_->get_node_base_interface());
+  ASSERT_NO_THROW(setup_security_service_test(executor)) << "Failed to setup security service";
 
   // initially set to secure
   ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
 
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
+
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
 
   // should stay secure
   ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
 
   // set to insecure
   ASSERT_NO_THROW(call_security_service(false, executor));
+
   ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::INSECURE);
 
   // set back to secure
   ASSERT_NO_THROW(call_security_service(true, executor));
+
   ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
 }
 
-TEST_F(Secured1dVelocityControllerTest, test_setting_secure_mode_service_while_publishing_status)
+TEST_F(Secured1dVelocityControllerTest, setting_secure_mode_service_while_publishing_status)
 {
-  SetUpController();
-
-  rclcpp::executors::MultiThreadedExecutor executor;
+  SetUpController("test_secured_1d_velocity_controller", true /*publish_state*/);
+  rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(controller_->get_node()->get_node_base_interface());
-  executor.add_node(service_caller_node_->get_node_base_interface());
+  ASSERT_NO_THROW(setup_security_service_test(executor)) << "Failed to setup security service";
 
   // initially set to secure
   ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
@@ -605,7 +621,12 @@ TEST_F(Secured1dVelocityControllerTest, test_setting_secure_mode_service_while_p
 
 TEST_F(Secured1dVelocityControllerTest, publish_status_success)
 {
-  SetUpController();
+  SetUpController("test_secured_1d_velocity_controller", true /*publish_state*/);
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(controller_->get_node()->get_node_base_interface());
+  ASSERT_NO_THROW(setup_security_service_test(executor)) << "Failed to setup security service";
+  ASSERT_NO_THROW(setup_log_service_test(executor)) << "Failed to setup log service";
+  ASSERT_NO_THROW(setup_msg_subscriber_test(executor)) << "Failed to setup message subscriber";
 
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
@@ -621,7 +642,7 @@ TEST_F(Secured1dVelocityControllerTest, publish_status_success)
   double end_inactive_value = another_value(end_active_value);
 
   std::shared_ptr<ControllerReferenceMsg> msg = std::make_shared<ControllerReferenceMsg>();
-  ControllerStateMsg msg;
+  ControllerStateMsg ctrl_msg;
 
   //================================================================
   // 1. Test positive velocity and no limit activated (SECURED MODE)
@@ -643,11 +664,12 @@ TEST_F(Secured1dVelocityControllerTest, publish_status_success)
 
   EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY1);
 
-  subscribe_and_get_messages(msg);
+  subscribe_and_get_messages(ctrl_msg, executor);
 
-  ASSERT_EQ(msg.set_point, TEST_VELOCITY1);
-  ASSERT_EQ(msg.secured_mode, true);
-  ASSERT_EQ(msg.security_enabled, false);
+  std::cout << "Received message: " << ctrl_msg << std::endl;
+  ASSERT_EQ(ctrl_msg.dof_state.set_point, TEST_VELOCITY1);
+  ASSERT_EQ(ctrl_msg.secured_mode, true);
+  ASSERT_EQ(ctrl_msg.security_triggered, false);
 
   /** TODO check
     //==================================================================

@@ -59,6 +59,9 @@ class TestableSecured1dVelocityController
   FRIEND_TEST(Secured1dVelocityControllerTest, reactivate_success);
   FRIEND_TEST(Secured1dVelocityControllerTest, update_logic_secure_mode);
   FRIEND_TEST(Secured1dVelocityControllerTest, update_logic_insecure_mode);
+  FRIEND_TEST(Secured1dVelocityControllerTest, setting_secure_mode_service);
+  FRIEND_TEST(Secured1dVelocityControllerTest, setting_secure_mode_service_while_publishing_status);
+  FRIEND_TEST(Secured1dVelocityControllerTest, publish_status_success);
 
 public:
   controller_interface::CallbackReturn on_configure(
@@ -118,25 +121,50 @@ public:
 
     std::string base_name = "/test_secured_1d_velocity_controller/";
 
+    // initialize reference command publisher node
     std::string ref_topic = base_name + reference_topic_;
     command_publisher_node_ = std::make_shared<rclcpp::Node>("reference_command_publisher");
     command_publisher_ = command_publisher_node_->create_publisher<ControllerReferenceMsg>(
       ref_topic, rclcpp::SystemDefaultsQoS());
 
+    // initialize security service client node
     std::string security_service = base_name + security_service_name_;
     security_service_caller_node_ = std::make_shared<rclcpp::Node>("security_service_caller");
     security_service_client_ =
       security_service_caller_node_->create_client<ControllerModeSrvType>(security_service);
 
+    // initialize log service client node
     std::string log_service = base_name + log_service_name_;
     log_service_caller_node_ = std::make_shared<rclcpp::Node>("security_service_caller");
     log_service_client_ =
       log_service_caller_node_->create_client<ControllerModeSrvType>(log_service);
+
+    // initialize msg subscriber node
+    msg_subscriber_node_ = std::make_shared<rclcpp::Node>("test_subscription_node");
+    auto subs_callback = [&](const ControllerStateMsg::SharedPtr) {};
+    msg_subscription_ = msg_subscriber_node_->create_subscription<ControllerStateMsg>(
+      "/test_secured_1d_velocity_controller/state", 10, subs_callback);
   }
 
-  static void TearDownTestCase() {}
+  void setup_security_service_test(rclcpp::Executor & executor)
+  {
+    executor.add_node(security_service_caller_node_);
+  }
 
-  void TearDown() { controller_.reset(nullptr); }
+  void setup_log_service_test(rclcpp::Executor & executor)
+  {
+    executor.add_node(log_service_caller_node_);
+  }
+
+  static void TearDownTestCase() { rclcpp::shutdown(); }
+
+  void TearDown()
+  {
+    security_service_client_.reset();
+    log_service_client_.reset();
+    command_publisher_.reset();
+    controller_.reset(nullptr);
+  }
 
 protected:
   void SetUpController(
@@ -176,7 +204,7 @@ protected:
     controller_->assign_interfaces(std::move(command_ifs), std::move(state_ifs));
 
     // Change the publish_state parameter disregarding the value set in the parameter file
-    controller_->params_.publish_state = publish_state;
+    controller_->set_publish_state(publish_state);
   }
 
   template <typename VEC1, typename VEC2>
@@ -232,14 +260,14 @@ protected:
     mock_interfaces(state_values_, cmds);
   }
 
-  void subscribe_and_get_messages(ControllerStateMsg & msg)
+  void setup_msg_subscriber_test(rclcpp::Executor & executor)
   {
-    // create a new subscriber
-    rclcpp::Node test_subscription_node("test_subscription_node");
-    auto subs_callback = [&](const ControllerStateMsg::SharedPtr) {};
-    auto subscription = test_subscription_node.create_subscription<ControllerStateMsg>(
-      "/test_secured_1d_velocity_controller/state", 10, subs_callback);
+    // Register msg subscriber node to executor
+    executor.add_node(msg_subscriber_node_);
+  }
 
+  void subscribe_and_get_messages(ControllerStateMsg & msg, rclcpp::Executor & executor)
+  {
     // call update to publish the test value
     ASSERT_EQ(
       controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
@@ -249,10 +277,11 @@ protected:
     // since update doesn't guarantee a published message, republish until received
     int max_sub_check_loop_count = 5;  // max number of tries for pub/sub loop
     rclcpp::WaitSet wait_set;          // block used to wait on message
-    wait_set.add_subscription(subscription);
+    wait_set.add_subscription(msg_subscription_);
     while (max_sub_check_loop_count--)
     {
       controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01));
+      executor.spin_some(std::chrono::seconds(1));
       // check if message has been received
       if (wait_set.wait(std::chrono::milliseconds(2)).kind() == rclcpp::WaitResultKind::Ready)
       {
@@ -264,7 +293,7 @@ protected:
 
     // take message from subscription
     rclcpp::MessageInfo msg_info;
-    ASSERT_TRUE(subscription->take(msg, msg_info));
+    ASSERT_TRUE(msg_subscription_->take(msg, msg_info));
   }
 
   void publish_commands(const double & velocity = 0.0)
@@ -306,8 +335,28 @@ protected:
     {
       throw std::runtime_error("Security mode service is not available!");
     }
+
     auto result = security_service_client_->async_send_request(request);
-    EXPECT_EQ(executor.spin_until_future_complete(result), rclcpp::FutureReturnCode::SUCCESS);
+
+    // Wait for the result and update controller while spinning
+    auto state =
+      executor.spin_until_future_complete(result, std::chrono::milliseconds(50) /*timeout*/);
+    size_t spin_count = 0;
+
+    while (state != rclcpp::FutureReturnCode::SUCCESS && spin_count < 200)
+    {
+      controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01));
+      state =
+        executor.spin_until_future_complete(result, std::chrono::milliseconds(50) /*timeout*/);
+      ++spin_count;
+    }
+
+    // std::cout << "Result: " << std::flush << result.get() << std::endl;
+    EXPECT_EQ(state, rclcpp::FutureReturnCode::SUCCESS);
+    if (state != rclcpp::FutureReturnCode::SUCCESS)
+    {
+      throw std::runtime_error("Security mode service call failed!");
+    }
 
     return result.get();
   }
@@ -367,6 +416,8 @@ protected:
   rclcpp::Client<ControllerModeSrvType>::SharedPtr security_service_client_;
   rclcpp::Node::SharedPtr log_service_caller_node_;
   rclcpp::Client<ControllerModeSrvType>::SharedPtr log_service_client_;
+  rclcpp::Node::SharedPtr msg_subscriber_node_;
+  rclcpp::Subscription<ControllerStateMsg>::SharedPtr msg_subscription_;
 };
 
 #endif  // TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_

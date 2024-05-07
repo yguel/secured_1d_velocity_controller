@@ -87,6 +87,9 @@ public:
   controller_interface::return_type update(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
+  SECURED_1D_VELOCITY_CONTROLLER__VISIBILITY_PUBLIC
+  void set_publish_state(bool publish_state);
+
   // Command reference message type definition
   using ControllerReferenceMsg = std_msgs::msg::Float64;
   // Service message type definition
@@ -117,11 +120,12 @@ protected:
 
   rclcpp::Publisher<ControllerStateMsg>::SharedPtr s_publisher_;
   std::unique_ptr<ControllerStatePublisher> state_publisher_;
+  bool setup_state_publisher();
 
 protected:
   inline void modify_secure_mode(const bool set_secure_mode)
   {
-    control_mode_type mode = control_mode_.readFromNonRT();
+    control_mode_type mode = *(control_mode_.readFromNonRT());
     if (set_secure_mode)
     {
       if (mode == control_mode_type::INSECURE)
@@ -152,7 +156,7 @@ protected:
 
   inline void modify_log_mode(const bool set_log_mode)
   {
-    control_mode_type mode = control_mode_.readFromNonRT();
+    control_mode_type mode = *(control_mode_.readFromNonRT());
     if (set_log_mode)
     {
       if (mode == control_mode_type::SECURE)
@@ -254,6 +258,7 @@ protected:
     const bool block, const double current_ref, const double current_velocity);
 
 protected:
+  control_mode_type define_control_mode(bool security_enabled, bool log_enabled) const;
   void set_control_mode(const control_mode_type mode);
   bool secured_mode_ = true;
   bool log_mode_ = false;
