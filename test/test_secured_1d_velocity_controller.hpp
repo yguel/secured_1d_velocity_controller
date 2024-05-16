@@ -62,6 +62,7 @@ class TestableSecured1dVelocityController
   FRIEND_TEST(Secured1dVelocityControllerTest, setting_secure_mode_service);
   FRIEND_TEST(Secured1dVelocityControllerTest, setting_secure_mode_service_while_publishing_status);
   FRIEND_TEST(Secured1dVelocityControllerTest, publish_status_success);
+  FRIEND_TEST(Secured1dVelocityControllerTest, receive_ref_command_msg_and_publish_updated_status);
 
 public:
   controller_interface::CallbackReturn on_configure(
@@ -119,7 +120,7 @@ public:
     // initialize controller
     controller_ = std::make_unique<CtrlType>();
 
-    std::string base_name = "/test_secured_1d_velocity_controller/";
+    const std::string base_name = "/test_secured_1d_velocity_controller/";
 
     // initialize reference command publisher node
     std::string ref_topic = base_name + reference_topic_;
@@ -143,7 +144,7 @@ public:
     msg_subscriber_node_ = std::make_shared<rclcpp::Node>("test_subscription_node");
     auto subs_callback = [&](const ControllerStateMsg::SharedPtr) {};
     msg_subscription_ = msg_subscriber_node_->create_subscription<ControllerStateMsg>(
-      "/test_secured_1d_velocity_controller/state", 10, subs_callback);
+      base_name + secured_1d_velocity_controller::STATE_TOPIC_NAME, 10, subs_callback);
   }
 
   void setup_security_service_test(rclcpp::Executor & executor)
@@ -154,6 +155,11 @@ public:
   void setup_log_service_test(rclcpp::Executor & executor)
   {
     executor.add_node(log_service_caller_node_);
+  }
+
+  void setup_ref_cmd_msg_publisher_test(rclcpp::Executor & executor)
+  {
+    executor.add_node(command_publisher_node_);
   }
 
   static void TearDownTestCase() { rclcpp::shutdown(); }
@@ -264,6 +270,7 @@ protected:
   {
     // Register msg subscriber node to executor
     executor.add_node(msg_subscriber_node_);
+    msg_wait_set_.add_subscription(msg_subscription_);
   }
 
   void subscribe_and_get_messages(ControllerStateMsg & msg, rclcpp::Executor & executor)
@@ -276,14 +283,13 @@ protected:
     // call update to publish the test value
     // since update doesn't guarantee a published message, republish until received
     int max_sub_check_loop_count = 5;  // max number of tries for pub/sub loop
-    rclcpp::WaitSet wait_set;          // block used to wait on message
-    wait_set.add_subscription(msg_subscription_);
+
     while (max_sub_check_loop_count--)
     {
-      controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01));
+      controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(1.0));
       executor.spin_some(std::chrono::seconds(1));
       // check if message has been received
-      if (wait_set.wait(std::chrono::milliseconds(2)).kind() == rclcpp::WaitResultKind::Ready)
+      if (msg_wait_set_.wait(std::chrono::milliseconds(2)).kind() == rclcpp::WaitResultKind::Ready)
       {
         break;
       }
@@ -402,8 +408,8 @@ protected:
   std::array<double, 3> state_values_end_ = {-1.5, 0., 1.};   // velocity, start_limit, end_limit
   std::array<double, 3> state_values_both_ = {3.5, 1., 1.};   // velocity, start_limit,
   std::array<double, 1> reference_command_values_ = {1.};
-  std::array<double, 1> reference_value_pos_ = {1.8};
-  std::array<double, 1> reference_value_neg_ = {-1.8};
+  std::array<double, 1> reference_command_value_pos_ = {1.};
+  std::array<double, 1> reference_command_value_neg_ = {-1.};
 
   std::vector<hardware_interface::StateInterface> state_itfs_;
   std::vector<hardware_interface::CommandInterface> command_itfs_;
@@ -418,6 +424,7 @@ protected:
   rclcpp::Client<ControllerModeSrvType>::SharedPtr log_service_client_;
   rclcpp::Node::SharedPtr msg_subscriber_node_;
   rclcpp::Subscription<ControllerStateMsg>::SharedPtr msg_subscription_;
+  rclcpp::WaitSet msg_wait_set_;  // block used to wait on message
 };
 
 #endif  // TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_

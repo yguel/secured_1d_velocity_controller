@@ -203,8 +203,8 @@ bool Secured1dVelocityController::setup_state_publisher()
     try
     {
       // State publisher
-      s_publisher_ =
-        get_node()->create_publisher<ControllerStateMsg>("~/status", rclcpp::SystemDefaultsQoS());
+      s_publisher_ = get_node()->create_publisher<ControllerStateMsg>(
+        std::string("~/") + STATE_TOPIC_NAME, rclcpp::SystemDefaultsQoS());
       state_publisher_ = std::make_unique<ControllerStatePublisher>(s_publisher_);
     }
     catch (const std::exception & e)
@@ -529,7 +529,6 @@ controller_interface::return_type Secured1dVelocityController::update_with_state
   const double reference_velocity, const double current_velocity, const bool start_limit_active,
   const bool end_limit_active, const rclcpp::Time & time, const rclcpp::Duration & period)
 {
-  std::cout << "update_with_state_published" << std::endl;
 #define METHOD_POINTER_CALL(ptrToMethod) (this->*(ptrToMethod))
   controller_interface::return_type ret = METHOD_POINTER_CALL(update_method_ptr2_)(
     reference_velocity, current_velocity, start_limit_active, end_limit_active, time, period);

@@ -16,10 +16,11 @@
 // clang-format off
 /**
  * Compile uniquely tests of this package:
- *   colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --packages-select
- * secured_1d_velocity_controller Execute uniquely one test of the test suite of this file (choose
- * in gtest_filter which test to run, here example with publish_status_success the star at the
- * beginning is important):
+ *   source install/setup.bash
+ *   colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --packages-select secured_1d_velocity_controller
+ * Execute uniquely one test of the test suite of this file (choose in
+ * gtest_filter which test to run, here example with publish_status_success
+ * the star at the beginning is important):
  *  ./build/secured_1d_velocity_controller/test_secured_1d_velocity_controller --ros-args --params-file ./src/secured_1d_velocity_controller/test/secured_1d_velocity_controller_params.yaml -- --gtest_output=xml:./build/secured_1d_velocity_controller/test_results/secured_1d_velocity_controller/test_secured_1d_velocity_controller.gtest.xml --gtest_filter=*publish_status_success
 */
 // clang-format on
@@ -119,6 +120,8 @@ TEST_F(Secured1dVelocityControllerTest, check_exported_intefaces)
   auto command_intefaces = controller_->command_interface_configuration();
   /** Test that the number of command interfaces is correct*/
   ASSERT_EQ(command_intefaces.names.size(), reference_command_values_.size());
+  ASSERT_EQ(command_intefaces.names.size(), reference_command_values_.size());
+
   /** Test that the order and the name of each interface is correct */
   for (size_t i = 0; i < command_intefaces.names.size(); ++i)
   {
@@ -580,18 +583,18 @@ TEST_F(Secured1dVelocityControllerTest, setting_secure_mode_service)
     controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
     controller_interface::return_type::OK);
 
-  // should stay secure
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
+  // should go to secure and log
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE_AND_LOG);
 
   // set to insecure
   ASSERT_NO_THROW(call_security_service(false, executor));
 
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::INSECURE);
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::INSECURE_AND_LOG);
 
   // set back to secure
   ASSERT_NO_THROW(call_security_service(true, executor));
 
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE_AND_LOG);
 }
 
 TEST_F(Secured1dVelocityControllerTest, setting_secure_mode_service_while_publishing_status)
@@ -607,16 +610,16 @@ TEST_F(Secured1dVelocityControllerTest, setting_secure_mode_service_while_publis
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
 
-  // should stay secure
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
+  // should go to secure and log
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE_AND_LOG);
 
   // set to insecure
   ASSERT_NO_THROW(call_security_service(false, executor));
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::INSECURE);
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::INSECURE_AND_LOG);
 
   // set back to secure
   ASSERT_NO_THROW(call_security_service(true, executor));
-  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE);
+  ASSERT_EQ(*(controller_->control_mode_.readFromRT()), control_mode_type::SECURE_AND_LOG);
 }
 
 TEST_F(Secured1dVelocityControllerTest, publish_status_success)
@@ -666,40 +669,117 @@ TEST_F(Secured1dVelocityControllerTest, publish_status_success)
 
   subscribe_and_get_messages(ctrl_msg, executor);
 
-  std::cout << "Received message: " << ctrl_msg << std::endl;
-  ASSERT_EQ(ctrl_msg.dof_state.set_point, TEST_VELOCITY1);
-  ASSERT_EQ(ctrl_msg.secured_mode, true);
-  ASSERT_EQ(ctrl_msg.security_triggered, false);
+  ASSERT_EQ(ctrl_msg.dof_state.set_point, TEST_VELOCITY1)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.dof_state.command, TEST_VELOCITY1)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.secured_mode, true) << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.security_triggered, false)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
 
-  /** TODO check
-    //==================================================================
-    // 4. Test positive velocity and end limit activated (SECURED MODE)
-    //==================================================================
+  //==================================================================
+  // 4. Test positive velocity and end limit activated (SECURED MODE)
+  //==================================================================
 
-    // set command statically
-    static constexpr double TEST_VELOCITY4 = 23.24;
-    msg->data = TEST_VELOCITY4;
-    controller_->input_ref_.writeFromNonRT(msg);
+  // set command statically
+  static constexpr double TEST_VELOCITY4 = 23.24;
+  msg->data = TEST_VELOCITY4;
+  controller_->input_ref_.writeFromNonRT(msg);
 
-    // set state values for limits
-    state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
-    state_values[STATE_END_LIMIT_ITFS] = end_active_value;
-    mock_states(state_values);
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
 
-    ASSERT_EQ(
-      controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
-      controller_interface::return_type::OK);
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
 
-    EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), 0.);
-    */
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), 0.);
+
+  subscribe_and_get_messages(ctrl_msg, executor);
+
+  ASSERT_EQ(ctrl_msg.dof_state.set_point, TEST_VELOCITY4)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.dof_state.command, 0.)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.secured_mode, true) << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.security_triggered, true)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+
+  //==================================================================
+
+  controller_->set_control_mode(control_mode_type::INSECURE);
+
+  //=================================================================
+  // 1. Test positive velocity and no limit activated (INSECURE MODE)
+  //=================================================================
+
+  // set command statically
+  msg->data = TEST_VELOCITY1;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY1);
+
+  subscribe_and_get_messages(ctrl_msg, executor);
+
+  ASSERT_EQ(ctrl_msg.dof_state.set_point, TEST_VELOCITY1)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.dof_state.command, TEST_VELOCITY1)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.secured_mode, false) << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.security_triggered, false)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+
+  //==================================================================
+  // 4. Test positive velocity and end limit activated (INSECURE MODE)
+  //==================================================================
+
+  // set command statically
+  msg->data = TEST_VELOCITY4;
+  controller_->input_ref_.writeFromNonRT(msg);
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  EXPECT_EQ(controller_->command_interfaces_[CMD_V_ITFS].get_value(), TEST_VELOCITY4);
+
+  subscribe_and_get_messages(ctrl_msg, executor);
+
+  ASSERT_EQ(ctrl_msg.dof_state.set_point, TEST_VELOCITY4)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.dof_state.command, TEST_VELOCITY4)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.secured_mode, false) << "Received message: " << to_yaml(ctrl_msg) << std::endl;
+  ASSERT_EQ(ctrl_msg.security_triggered, false)
+    << "Received message: " << to_yaml(ctrl_msg) << std::endl;
 }
 
-/**
-TEST_F(Secured1dVelocityControllerTest, receive_message_and_publish_updated_status)
+TEST_F(Secured1dVelocityControllerTest, receive_ref_command_msg_and_publish_updated_status)
 {
-  SetUpController();
+  SetUpController("test_secured_1d_velocity_controller", true /*publish_state*/);
   rclcpp::executors::MultiThreadedExecutor executor;
   executor.add_node(controller_->get_node()->get_node_base_interface());
+  ASSERT_NO_THROW(setup_security_service_test(executor)) << "Failed to setup security service";
+  ASSERT_NO_THROW(setup_log_service_test(executor)) << "Failed to setup log service";
+  ASSERT_NO_THROW(setup_msg_subscriber_test(executor)) << "Failed to setup message subscriber";
+  ASSERT_NO_THROW(setup_ref_cmd_msg_publisher_test(executor))
+    << "Failed to setup reference command message publisher";
 
   ASSERT_EQ(controller_->on_configure(rclcpp_lifecycle::State()), NODE_SUCCESS);
   ASSERT_EQ(controller_->on_activate(rclcpp_lifecycle::State()), NODE_SUCCESS);
@@ -708,23 +788,67 @@ TEST_F(Secured1dVelocityControllerTest, receive_message_and_publish_updated_stat
     controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
     controller_interface::return_type::OK);
 
+  controller_->set_control_mode(control_mode_type::SECURE);
+
+  std::vector<double> state_values = {0.0, 0.0, 0.0};
+
+  double start_active_value = controller_->start_active_value_;
+  double start_inactive_value = another_value(start_active_value);
+  double end_active_value = controller_->end_active_value_;
+  double end_inactive_value = another_value(end_active_value);
   ControllerStateMsg msg;
-  subscribe_and_get_messages(msg);
 
-  ASSERT_EQ(msg.set_point, reference_command_values_[CMD_V_ITFS]);
+  //================================================================
+  // 1. Test positive velocity and no limit activated (SECURED MODE)
+  //================================================================
 
-  publish_commands(reference_value_pos_[CMD_V_ITFS]);
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_inactive_value;
+  mock_states(state_values);
+
+  ASSERT_NO_THROW(publish_commands(reference_command_value_pos_[CMD_V_ITFS]))
+    << "Failed to publish reference command";
   ASSERT_TRUE(controller_->wait_for_commands(executor));
 
   ASSERT_EQ(
     controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
     controller_interface::return_type::OK);
 
-  subscribe_and_get_messages(msg);
+  subscribe_and_get_messages(msg, executor);
 
-  ASSERT_EQ(msg.set_point, reference_value_pos_[CMD_V_ITFS]);
+  ASSERT_EQ(msg.dof_state.set_point, reference_command_value_pos_[CMD_V_ITFS])
+    << "Received message: " << to_yaml(msg);
+  ASSERT_EQ(msg.dof_state.command, reference_command_value_pos_[CMD_V_ITFS])
+    << "Received message: " << to_yaml(msg);
+  ASSERT_EQ(msg.secured_mode, true) << "Received message: " << to_yaml(msg) << std::endl;
+  ASSERT_EQ(msg.security_triggered, false) << "Received message: " << to_yaml(msg) << std::endl;
+
+  //==================================================================
+  // 4. Test positive velocity and end limit activated (INSECURE MODE)
+  //==================================================================
+
+  ASSERT_NO_THROW(publish_commands(reference_command_value_pos_[CMD_V_ITFS]))
+    << "Failed to publish reference command";
+  ASSERT_TRUE(controller_->wait_for_commands(executor));
+
+  // set state values for limits
+  state_values[STATE_START_LIMIT_ITFS] = start_inactive_value;
+  state_values[STATE_END_LIMIT_ITFS] = end_active_value;
+  mock_states(state_values);
+
+  ASSERT_EQ(
+    controller_->update(rclcpp::Time(0), rclcpp::Duration::from_seconds(0.01)),
+    controller_interface::return_type::OK);
+
+  subscribe_and_get_messages(msg, executor);
+
+  ASSERT_EQ(msg.dof_state.set_point, reference_command_value_pos_[CMD_V_ITFS])
+    << "Received message: " << to_yaml(msg);
+  ASSERT_EQ(msg.dof_state.command, 0.) << "Received message: " << to_yaml(msg);
+  ASSERT_EQ(msg.secured_mode, true) << "Received message: " << to_yaml(msg) << std::endl;
+  ASSERT_EQ(msg.security_triggered, true) << "Received message: " << to_yaml(msg) << std::endl;
 }
-*/
 
 int main(int argc, char ** argv)
 {

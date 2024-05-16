@@ -56,6 +56,8 @@ enum class control_mode_type : std::uint8_t
   INSECURE_AND_LOG = 4
 };
 
+static constexpr char STATE_TOPIC_NAME[] = "status";
+
 class Secured1dVelocityController : public controller_interface::ControllerInterface
 {
 public:
