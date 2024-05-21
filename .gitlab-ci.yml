@@ -26,7 +26,7 @@ doc:
   stage: build
   script:
     - echo "Building the documentation"
-    - cd docs && earthly --push --secret GIT_TOKEN=${CI_JOB_TOKEN} +commit-and-push-gh-pages --GIT_REPO_URL=${CI_SERVER_HOST}/${CI_PROJECT_PATH} --HTTPS=true --PLATFORM="gitlab" --GIT_USER_EMAIL=action@${CI_SERVER_HOST} --GIT_USER_NAME="gitlab-actions[bot]" --CTRLER_NAME="secured_1d_velocity_controller" && cd --
+    - cd docs && earthly --push --secret GIT_TOKEN=${CI_JOB_TOKEN} +commit-and-push-gh-pages --GIT_REPO_URL=${CI_SERVER_HOST}/${CI_PROJECT_PATH} --HTTPS=true --PLATFORM="gitlab" --GIT_USER_EMAIL=action@${CI_SERVER_HOST} --GIT_USER_NAME="gitlab-actions[bot]" --CTRLER_NAME="secured_1d_velocity_controller"
   only:
     - main
 
@@ -47,9 +47,9 @@ tests:
   stage: test
   script:
     - echo "Running tests"
-    - cd test && earthly --secret GIT_TOKEN=${CI_JOB_TOKEN} +test_results --GIT_REPO_URL=${CI_SERVER_HOST}/${CI_PROJECT_PATH} --PLATFORM="gitlab" --GIT_USER_EMAIL=action@${CI_SERVER_HOST} --GIT_USER_NAME="gitlab-actions[bot]" --CTRLER_NAME="secured_1d_velocity_controller" && cd --
+    - cd secured_1d_velocity_controller/test && earthly --secret GIT_TOKEN=${CI_JOB_TOKEN} +test_results --GIT_REPO_URL=${CI_SERVER_HOST}/${CI_PROJECT_PATH} --PLATFORM="gitlab" --GIT_USER_EMAIL=action@${CI_SERVER_HOST} --GIT_USER_NAME="gitlab-actions[bot]" --CTRLER_NAME="secured_1d_velocity_controller"
   artifacts:
     when: always
     expire_in: "120 days"
     reports:
-      junit: test/test_results/*.xml
+      junit: secured_1d_velocity_controller/test/test_results/*.xml

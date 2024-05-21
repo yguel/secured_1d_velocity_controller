@@ -1,0 +1,32 @@
+VERSION 0.8
+# Automated build of CI/CD for the project
+
+# The docker image the build will run in
+FROM ubuntu:22.04
+WORKDIR /earthly_workdir
+
+ARG --global python = python3.10
+
+sources:
+    # Get the code of the project to build
+    RUN mkdir -p msg srv
+    COPY msg/*.msg ./msg/
+    #COPY srv/*.srv ./srv/
+    COPY CMakeLists.txt ./
+    COPY package.xml ./
+    SAVE ARTIFACT ./*
+
+# test-sources:
+#     # Get the tests of the project
+#     RUN mkdir -p test
+#     COPY test/*.cpp test/*.yaml test/*.hpp ./test/
+#     SAVE ARTIFACT ./*
+
+
+#For debugging
+docker-debug:
+    FROM ros:$ROS_DOCKER_TAG
+    COPY --dir ( +sources/* ) .
+    #COPY --dir ( +test-sources/* ) .
+    ENTRYPOINT ["tail", "-f", "/dev/null"]
+    SAVE IMAGE debug_sec1d_ctrl:latest

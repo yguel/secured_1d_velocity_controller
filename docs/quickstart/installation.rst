@@ -29,6 +29,11 @@ To build and run the tests, :ref:`see the instructions about building unit tests
 Build this documentation
 ------------------------
 
+Go to the ''doc'' directory to build the documentation:
+    .. code-block:: console
+
+        $ cd ~/ros2_ws/src/secured_1d_velocity_controller/doc
+
 1. Install dependencies using
     .. code-block:: console
 
@@ -38,6 +43,8 @@ Build this documentation
     .. code-block:: console
 
         $ cd user_guide
+        $ ln -s ../../secured_1d_velocity_controller/src/secured_1d_velocity_controller.yaml configuration_file_for_secured_1d_velocity_controller.yaml
+        $ ln -s ../../secured_1d_velocity_controller/test/secured_1d_velocity_controller_params.yaml
         $ generate_parameter_library_markdown --input_yaml configuration_file_for_secured_1d_velocity_controller.yaml --output_markdown_file secured_1d_velocity_controller_parameters.md
         $ cd ..
 

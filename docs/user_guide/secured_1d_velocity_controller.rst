@@ -40,11 +40,12 @@ The information we need to configure the security parameters are:
 3. the state interface name of the velocity
 4. the command interface name of the velocity
 
-.. mdinclude:: secured_1d_velocity_controller_parameters.md
+.. include:: secured_1d_velocity_controller_parameters.md
+   :parser: myst_parser.sphinx_
 
 
 Example of a configuration file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 .. literalinclude:: secured_1d_velocity_controller_params.yaml
    :language: yaml

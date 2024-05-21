@@ -3,6 +3,9 @@ docs/_build/
 docs/user_guide/configuration_file_for_secured_1d_velocity_controller.yaml
 docs/user_guide/secured_1d_velocity_controller_params.yaml
 docs/user_guide/secured_1d_velocity_controller_parameters.md
+secured_1d_control_interfaces/docs
+secured_1d_control_interfaces/.vscode
+*.swp
 
 # Python pip files
 Pipfile

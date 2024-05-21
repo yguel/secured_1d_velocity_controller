@@ -1,6 +1,13 @@
 VERSION 0.8
 # Automated build of CI/CD for the project
 
+# HOWTO run earthly CI locally
+#=============================
+## Test the compilation of the package with the CI:
+### earthly --artifact +build-image/* ./ws_ros2_artifacts/
+## Test the format checks of the package with the CI:
+### earthly +check-format
+
 # The docker image the build will run in
 FROM ubuntu:22.04
 WORKDIR /earthly_workdir
@@ -12,26 +19,6 @@ ci-cd-sources:
     RUN mkdir -p .ci_cd
     COPY --dir .ci_cd/* ./.ci_cd
     SAVE ARTIFACT ./.ci_cd ./.ci_cd
-
-sources:
-    # Get the code of the project to build
-    RUN mkdir -p src include/secured_1d_velocity_controller
-    COPY src/*.cpp src/*.yaml ./src/
-    COPY include/secured_1d_velocity_controller/*.h ./include/secured_1d_velocity_controller/
-    COPY include/secured_1d_velocity_controller/*.hpp ./include/secured_1d_velocity_controller/
-    COPY CMakeLists.txt ./
-    COPY package.xml secured_1d_velocity_controller.xml ./
-    SAVE ARTIFACT ./*
-
-top-doc-sources:
-    COPY README.md LICENSE ./
-    SAVE ARTIFACT ./*
-
-test-sources:
-    # Get the tests of the project
-    RUN mkdir -p test
-    COPY test/*.cpp test/*.yaml test/*.hpp ./test/
-    SAVE ARTIFACT ./*
 
 format-files:
     COPY .pre-commit-config.yaml ./
@@ -52,13 +39,59 @@ python-deps:
     RUN apt-get install -y -qq $python python3-pip
     RUN $python -m pip install --upgrade pip
 
+###################
+## Documentation ##
+###################
+
+top-doc-sources:
+    COPY README.md LICENSE ./
+    SAVE ARTIFACT ./*
+
+####################################
+## secured_1d_velocity_controller ##
+####################################
+
+s1d-vel-dir:
+    RUN mkdir -p src/secured_1d_velocity_controller
+    SAVE ARTIFACT src/secured_1d_velocity_controller src/secured_1d_velocity_controller
+
+s1d-vel-sources:
+    FROM +s1d-vel-dir
+    COPY --dir (./secured_1d_velocity_controller/+sources/*)  src/secured_1d_velocity_controller/
+    SAVE ARTIFACT src/secured_1d_velocity_controller/* src/secured_1d_velocity_controller/
+
+s1d-vel-test-sources:
+    FROM +s1d-vel-dir
+    # Get the tests of the project
+    COPY --dir (./secured_1d_velocity_controller/+test-sources/*) src/secured_1d_velocity_controller/
+    SAVE ARTIFACT src/secured_1d_velocity_controller/* src/secured_1d_velocity_controller/
+
+###################################
+## secured_1d_control_interfaces ##
+###################################
+
+s1d-iface-dir:
+    RUN mkdir -p src/secured_1d_control_interfaces
+    SAVE ARTIFACT src/secured_1d_control_interfaces src/secured_1d_control_interfaces
+
+s1d-iface-sources:
+    FROM +s1d-iface-dir
+    COPY --dir (./secured_1d_control_interfaces/+sources/*) src/secured_1d_control_interfaces/
+    SAVE ARTIFACT src/secured_1d_control_interfaces/* src/secured_1d_control_interfaces/
+
+###############
+## ROS image ##
+###############
+
 build-image:
     FROM ros:$ROS_DOCKER_TAG
     RUN mkdir -p ws_ros2/src/secured_1d_velocity_controller
+    RUN mkdir -p ws_ros2/src/secured_1d_control_interfaces
     # Get the code of the project to document
-    COPY --dir (+sources/*) ws_ros2/src/secured_1d_velocity_controller
     COPY --dir (+top-doc-sources/*) ws_ros2/src/secured_1d_velocity_controller
-    COPY --dir (+test-sources/*) ws_ros2/src/secured_1d_velocity_controller
+    COPY --dir (+s1d-vel-sources/src/secured_1d_velocity_controller/*) ws_ros2/src/secured_1d_velocity_controller
+    COPY --dir (+s1d-vel-test-sources/src/secured_1d_velocity_controller/*) ws_ros2/src/secured_1d_velocity_controller
+    COPY --dir (+s1d-iface-sources/src/secured_1d_control_interfaces/*) ws_ros2/src/secured_1d_control_interfaces
 
     LET UPDATE_CMD = "apt-get update -y -qq"
     RUN /bin/bash -c "$UPDATE_CMD"
@@ -98,6 +131,10 @@ build-image:
     SAVE ARTIFACT ws_ros2 ws_ros2
     SAVE IMAGE ros2_for_sec1d_ctrl:latest
 
+#######################
+## Code format tests ##
+#######################
+
 check-format-deps:
     FROM +python-deps
     # Install the dependencies for the code formatter
@@ -124,8 +161,7 @@ check-format:
 #For debugging
 docker-debug:
     FROM ros:$ROS_DOCKER_TAG
-    COPY --dir ( +sources/* ) .
-    COPY --dir ( +test-sources/* ) .
+    COPY --dir ( +s1d-vel-sources/* ) .
     COPY --dir ( +top-doc-sources/* ) .
     ENTRYPOINT ["tail", "-f", "/dev/null"]
     SAVE IMAGE debug_sec1d_ctrl:latest

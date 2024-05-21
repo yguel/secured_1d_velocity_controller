@@ -1,0 +1,34 @@
+VERSION 0.8
+# Automated build of CI/CD for the project
+
+# The docker image the build will run in
+FROM ubuntu:22.04
+WORKDIR /earthly_workdir
+
+ARG --global python = python3.10
+
+sources:
+    # Get the code of the project to build
+    RUN mkdir -p src include/secured_1d_velocity_controller
+    COPY src/*.cpp src/*.yaml ./src/
+    COPY include/secured_1d_velocity_controller/*.h ./include/secured_1d_velocity_controller/
+    COPY include/secured_1d_velocity_controller/*.hpp ./include/secured_1d_velocity_controller/
+    COPY CMakeLists.txt ./
+    COPY package.xml secured_1d_velocity_controller.xml ./
+    SAVE ARTIFACT ./*
+
+test-sources:
+    # Get the tests of the project
+    RUN mkdir -p test
+    COPY test/*.cpp test/*.yaml test/*.hpp ./test/
+    SAVE ARTIFACT ./*
+
+
+#For debugging
+docker-debug:
+    FROM ros:$ROS_DOCKER_TAG
+    COPY --dir ( +sources/* ) .
+    COPY --dir ( +test-sources/* ) .
+    COPY --dir ( +top-doc-sources/* ) .
+    ENTRYPOINT ["tail", "-f", "/dev/null"]
+    SAVE IMAGE debug_sec1d_ctrl:latest

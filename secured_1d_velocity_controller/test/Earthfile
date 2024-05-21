@@ -11,7 +11,7 @@ VERSION 0.8
 
 # HOWTO run earthly CI locally
 #=============================
-##  earthly --artifact --secret GIT_TOKEN=YOUR_GIT_TOKEN +test-results --GIT_REPO_URL="github.com/yguel/secured_1d_velocity_controller" --HTTPS=true --PLATFORM="github" --CTRLER_NAME="secured_1d_velocity_controller"
+##  earthly --artifact +test-results/* ./test_results_artifacts/
 
 # The docker image the build will run in
 FROM ubuntu:22.04
@@ -20,10 +20,10 @@ WORKDIR /earthly_workdir
 ARG --global python = python3.10
 
 run-tests:
-    FROM ../.+build-image
+    FROM ../../.+build-image
     LET ROS2_RUN_TEST_CMD = "cd ws_ros2 && " \
         "source /opt/ros/$ROS_DISTRO/setup.bash && " \
-        "colcon test --ctest-args tests && " \
+        "colcon test --ctest-args tests --output-on-failure && " \
         "colcon test-result"
     RUN --no-cache /bin/bash -c "$ROS2_RUN_TEST_CMD"
     RUN mkdir -p test_results
@@ -36,7 +36,7 @@ test-results:
     #BUILD +run-tests
     FROM +run-tests
     RUN mkdir -p ./.ci_cd
-    COPY --dir ../.+ci-cd-sources/.ci_cd/* ./.ci_cd/
+    COPY --dir ../../.+ci-cd-sources/.ci_cd/* ./.ci_cd/
     RUN apt-get update -y -qq
     RUN cd .ci_cd && \
         $python -m pip install pipenv && \

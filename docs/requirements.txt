@@ -1,5 +1,5 @@
-m2r
 mistune < 1.0.0
+myst-parser
 sphinx-copybutton
 sphinx-tabs
 sphinx_rtd_theme

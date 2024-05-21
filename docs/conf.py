@@ -35,7 +35,8 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_tabs.tabs",
     "sphinx_rtd_theme",
-    "m2r",
+    "myst_parser",
+    # "m2r",
 ]
 
 templates_path = ["_templates"]

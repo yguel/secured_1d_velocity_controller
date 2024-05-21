@@ -79,10 +79,10 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Tests
-        run: cd test && earthly --secret GIT_TOKEN=${{ secrets.GITHUB_TOKEN }} +test-results --GIT_REPO_URL="github.com/${{ github.repository }}" --PLATFORM="github" --GIT_USER_EMAIL="action@github.com" --GIT_USER_NAME="gitHub-actions[bot]" --CTRLER_NAME="secured_1d_velocity_controller" && cd --
+        run: cd secured_1d_velocity_controller/test && earthly --secret GIT_TOKEN=${{ secrets.GITHUB_TOKEN }} +test-results --GIT_REPO_URL="github.com/${{ github.repository }}" --PLATFORM="github" --GIT_USER_EMAIL="action@github.com" --GIT_USER_NAME="gitHub-actions[bot]" --CTRLER_NAME="secured_1d_velocity_controller"
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          files: test/test_results/*.xml
+          files: secured_1d_velocity_controller/test/test_results/*.xml

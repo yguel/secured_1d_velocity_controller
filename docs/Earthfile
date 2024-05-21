@@ -1,6 +1,14 @@
 VERSION 0.8
 # Documentation checks and build instructions for CI/CD
 
+
+# HOWTO run earthly CI locally
+#=============================
+## Test building the documentation locally:
+###  earthly --artifact +doc-build/* --CTRLER_NAME="secured_1d_velocity_controller" ./doc_build_artifacts/
+## Test publishing the documentation from a local build:
+### earthly --secret GIT_TOKEN=YOUR_GIT_TOKEN +commit-and-push-gh-pages/* --GIT_REPO_URL="github.com/yguel/secured_1d_velocity_controller" --HTTPS=true --PLATFORM="github" --CTRLER_NAME="secured_1d_velocity_controller"
+
 # The docker image the build will run in
 FROM ubuntu:22.04
 WORKDIR /earthly_workdir
@@ -9,16 +17,16 @@ ARG --global python = python3.10
 ARG --global GENERATE_PARAMETER_LIBRARY_IS_USED = true
 ARG --global ROS_DOCKER_TAG = humble-ros-base-jammy
 ARG --global EARTHLY_GIT_PROJECT_NAME
-ARG --global CTRLER_NAME
+ARG --global CTRLER_NAME = secured_1d_velocity_controller
 ARG --global PARAM_FILE_DECLARATION = $CTRLER_NAME".yaml"
 ARG --global PARAM_FILE_DOC = $CTRLER_NAME"_parameters.md"
 
 doc-files:
     FROM ../.+build-image
     # Get the code of the project to document
-    COPY --dir (../.+sources/*) .
+    COPY --dir (../.+s1d-vel-sources/*) .
+    COPY --dir (../.+s1d-vel-test-sources/*) .
     COPY --dir (../.+top-doc-sources/*) .
-    COPY --dir (../.+test-sources/*) .
     RUN --no-cache mkdir -p docs
     # Get the sources of the project documentation
     #  Beware any symbolic link outside the Earthfile directory should be handled specifically
@@ -41,8 +49,8 @@ doc-build:
     COPY --dir (+doc-files/docs) .
     IF [ "$GENERATE_PARAMETER_LIBRARY_IS_USED" = "true" ]
         RUN cd ./docs/user_guide && \
-            ln -s ../../src/$PARAM_FILE_DECLARATION $PARAM_FILE_DECLARATION_IN_DOC && \
-            ln -s ../../test/$PARAM_FILE_EXAMPLE && \
+            ln -sf ../../src/secured_1d_velocity_controller/src/$PARAM_FILE_DECLARATION $PARAM_FILE_DECLARATION_IN_DOC && \
+            ln -sf ../../src/secured_1d_velocity_controller/test/$PARAM_FILE_EXAMPLE && \
             cd ../..
 
         # Generate markdown for the parameter file
