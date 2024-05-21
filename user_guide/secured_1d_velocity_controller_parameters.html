@@ -23,7 +23,7 @@
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
-        <script src="../_static/copybutton.js?v=f281be69"></script>
+        <script src="../_static/copybutton.js?v=30646c52"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -99,6 +99,7 @@
 <span class="w">    </span><span class="nt">log_mode_service</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NO_LOG</span>
 <span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set_log_mode</span>
+<span class="w">    </span><span class="nt">publish_state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">    </span><span class="nt">reference_topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reference_velocity</span>
 <span class="w">    </span><span class="nt">security_mode_service</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">default_mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SECURE</span>
@@ -198,6 +199,15 @@
 <p><em>Constraints:</em></p>
 <ul class="simple">
 <li><p>greater than 0.0</p></li>
+</ul>
+</section>
+<section id="publish-state">
+<h2>publish_state<a class="headerlink" href="#publish-state" title="Link to this heading"></a></h2>
+<p>Flag used to enable or disable the publication of the state of the controller</p>
+<ul class="simple">
+<li><p>Type: <code class="docutils literal notranslate"><span class="pre">bool</span></code></p></li>
+<li><p>Default Value: false</p></li>
+<li><p>Read only: True</p></li>
 </ul>
 </section>
 <section id="security-mode-service-default-mode">

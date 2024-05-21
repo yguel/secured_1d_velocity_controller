@@ -21,7 +21,7 @@ Navigate to the workspace root and build the package:
         $ cd ~/ros2_ws
         $ source /opt/ros/humble/setup.bash
         $ rosdep install --ignore-src --from-paths . -y -r
-        $ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
+        $ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install --packages-select secured_1d_velocity_controller
         $ source install/setup.bash
 
 To build and run the tests, :ref:`see the instructions about building unit tests<Build and launch the tests>`.

@@ -11,6 +11,7 @@ secured_1d_velocity_controller:
     log_mode_service:
       default_mode: NO_LOG
       service: set_log_mode
+    publish_state: false
     reference_topic: reference_velocity
     security_mode_service:
       default_mode: SECURE
@@ -98,6 +99,14 @@ Tolerance used to consider the velocity command as zero
 
 *Constraints:*
  - greater than 0.0
+
+## publish_state
+
+Flag used to enable or disable the publication of the state of the controller
+
+* Type: `bool`
+* Default Value: false
+* Read only: True
 
 ## security_mode_service.default_mode
 
