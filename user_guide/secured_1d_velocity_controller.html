@@ -58,25 +58,25 @@
 <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Secure 1D Velocity Controller</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#configuration-of-the-security-parameters">Configuration of the security parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-of-the-security-parameters">Configuration of the security parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#secured-1d-velocity-controller-parameters">Secured 1d Velocity Controller Parameters</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#joint">joint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#start-limit-state-interface">start_limit.state_interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#start-limit-active-value">start_limit.active_value</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#end-limit-state-interface">end_limit.state_interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#end-limit-active-value">end_limit.active_value</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#reference-topic">reference_topic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#zero-velocity-tolerance">zero_velocity_tolerance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#publish-state">publish_state</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#security-mode-service-default-mode">security_mode_service.default_mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#security-mode-service-service">security_mode_service.service</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#log-mode-service-default-mode">log_mode_service.default_mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#log-mode-service-service">log_mode_service.service</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#secured-1d-velocity-controller-parameters">Secured 1d Velocity Controller Parameters</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#joint">joint</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#start-limit-state-interface">start_limit.state_interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#start-limit-active-value">start_limit.active_value</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#end-limit-state-interface">end_limit.state_interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#end-limit-active-value">end_limit.active_value</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#reference-topic">reference_topic</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#zero-velocity-tolerance">zero_velocity_tolerance</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#publish-state">publish_state</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#security-mode-service-default-mode">security_mode_service.default_mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#security-mode-service-service">security_mode_service.service</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#log-mode-service-default-mode">log_mode_service.default_mode</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#log-mode-service-service">log_mode_service.service</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#example-of-a-configuration-file">Example of a configuration file</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#example-of-a-configuration-file">Example of a configuration file</a></li>
 </ul>
 </li>
 </ul>
@@ -146,10 +146,8 @@ This default behavior is here to ensure that the user is aware of the security p
 <li><p>the state interface name of the velocity</p></li>
 <li><p>the command interface name of the velocity</p></li>
 </ol>
-</section>
-</section>
 <section id="secured-1d-velocity-controller-parameters">
-<h1>Secured 1d Velocity Controller Parameters<a class="headerlink" href="#secured-1d-velocity-controller-parameters" title="Link to this heading"></a></h1>
+<h3>Secured 1d Velocity Controller Parameters<a class="headerlink" href="#secured-1d-velocity-controller-parameters" title="Link to this heading"></a></h3>
 <p>Default Config</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">secured_1d_velocity_controller</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
@@ -172,7 +170,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </pre></div>
 </div>
 <section id="joint">
-<h2>joint<a class="headerlink" href="#joint" title="Link to this heading"></a></h2>
+<h4>joint<a class="headerlink" href="#joint" title="Link to this heading"></a></h4>
 <p>Name of the joint used by the controller. Cannot be empty.</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
@@ -185,7 +183,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="start-limit-state-interface">
-<h2>start_limit.state_interface<a class="headerlink" href="#start-limit-state-interface" title="Link to this heading"></a></h2>
+<h4>start_limit.state_interface<a class="headerlink" href="#start-limit-state-interface" title="Link to this heading"></a></h4>
 <p>State interface provided by the hardware responsible for the start limit sensor</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
@@ -198,7 +196,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="start-limit-active-value">
-<h2>start_limit.active_value<a class="headerlink" href="#start-limit-active-value" title="Link to this heading"></a></h2>
+<h4>start_limit.active_value<a class="headerlink" href="#start-limit-active-value" title="Link to this heading"></a></h4>
 <p>Value of the state interface when the start limit sensor is active</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">double</span></code></p></li>
@@ -211,7 +209,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="end-limit-state-interface">
-<h2>end_limit.state_interface<a class="headerlink" href="#end-limit-state-interface" title="Link to this heading"></a></h2>
+<h4>end_limit.state_interface<a class="headerlink" href="#end-limit-state-interface" title="Link to this heading"></a></h4>
 <p>State interface provided by the hardware responsible for the end limit sensor</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
@@ -224,7 +222,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="end-limit-active-value">
-<h2>end_limit.active_value<a class="headerlink" href="#end-limit-active-value" title="Link to this heading"></a></h2>
+<h4>end_limit.active_value<a class="headerlink" href="#end-limit-active-value" title="Link to this heading"></a></h4>
 <p>Value of the state interface when the end limit sensor is active</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">double</span></code></p></li>
@@ -237,7 +235,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="reference-topic">
-<h2>reference_topic<a class="headerlink" href="#reference-topic" title="Link to this heading"></a></h2>
+<h4>reference_topic<a class="headerlink" href="#reference-topic" title="Link to this heading"></a></h4>
 <p>Name of the topic used to receive reference commands</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
@@ -250,7 +248,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="zero-velocity-tolerance">
-<h2>zero_velocity_tolerance<a class="headerlink" href="#zero-velocity-tolerance" title="Link to this heading"></a></h2>
+<h4>zero_velocity_tolerance<a class="headerlink" href="#zero-velocity-tolerance" title="Link to this heading"></a></h4>
 <p>Tolerance used to consider the velocity command as zero</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">double</span></code></p></li>
@@ -263,7 +261,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="publish-state">
-<h2>publish_state<a class="headerlink" href="#publish-state" title="Link to this heading"></a></h2>
+<h4>publish_state<a class="headerlink" href="#publish-state" title="Link to this heading"></a></h4>
 <p>Flag used to enable or disable the publication of the state of the controller</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">bool</span></code></p></li>
@@ -272,7 +270,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="security-mode-service-default-mode">
-<h2>security_mode_service.default_mode<a class="headerlink" href="#security-mode-service-default-mode" title="Link to this heading"></a></h2>
+<h4>security_mode_service.default_mode<a class="headerlink" href="#security-mode-service-default-mode" title="Link to this heading"></a></h4>
 <p>Default mode used by the controller. Available modes are: 1. SECURE, 2. INSECURE The SECURE mode is used to activate the security limits. The INSECURE mode is used to deactivate the security limits, be very careful when using this mode.</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
@@ -285,7 +283,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="security-mode-service-service">
-<h2>security_mode_service.service<a class="headerlink" href="#security-mode-service-service" title="Link to this heading"></a></h2>
+<h4>security_mode_service.service<a class="headerlink" href="#security-mode-service-service" title="Link to this heading"></a></h4>
 <p>Name of the service used to activate or deactivate security limit</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
@@ -294,7 +292,7 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="log-mode-service-default-mode">
-<h2>log_mode_service.default_mode<a class="headerlink" href="#log-mode-service-default-mode" title="Link to this heading"></a></h2>
+<h4>log_mode_service.default_mode<a class="headerlink" href="#log-mode-service-default-mode" title="Link to this heading"></a></h4>
 <p>Default log mode used by the controller. Available modes are: 1. NO_LOG, 2. LOG, The LOG mode is used to log the security limit activation and deactivation.</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
@@ -307,15 +305,18 @@ This default behavior is here to ensure that the user is aware of the security p
 </ul>
 </section>
 <section id="log-mode-service-service">
-<h2>log_mode_service.service<a class="headerlink" href="#log-mode-service-service" title="Link to this heading"></a></h2>
+<h4>log_mode_service.service<a class="headerlink" href="#log-mode-service-service" title="Link to this heading"></a></h4>
 <p>Name of the service used to activate or deactivate logging of security limit activation and deactivation</p>
 <ul class="simple">
 <li><p>Type: <code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
 <li><p>Default Value: “set_log_mode”</p></li>
 <li><p>Read only: True</p></li>
 </ul>
+</section>
+</section>
+</section>
 <section id="example-of-a-configuration-file">
-<h3>Example of a configuration file<a class="headerlink" href="#example-of-a-configuration-file" title="Link to this heading"></a></h3>
+<h2>Example of a configuration file<a class="headerlink" href="#example-of-a-configuration-file" title="Link to this heading"></a></h2>
 <div class="literal-block-wrapper docutils container" id="id1">
 <div class="code-block-caption"><span class="caption-text">Example of a yaml configuration file for the secured 1d velocity controller</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">test_secured_1d_velocity_controller</span><span class="p">:</span>
@@ -339,7 +340,6 @@ This default behavior is here to ensure that the user is aware of the security p
 </pre></div>
 </div>
 </div>
-</section>
 </section>
 </section>
 

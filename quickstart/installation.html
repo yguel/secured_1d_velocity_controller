@@ -62,7 +62,6 @@
 <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../user_guide/secured_1d_velocity_controller.html">Secure 1D Velocity Controller</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/secured_1d_velocity_controller.html#secured-1d-velocity-controller-parameters">Secured 1d Velocity Controller Parameters</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
 <ul>
@@ -120,6 +119,12 @@ $ git clone <a class="reference external" href="https://github.com/yguel/secured
 </section>
 <section id="build-this-documentation">
 <h2>Build this documentation<a class="headerlink" href="#build-this-documentation" title="Link to this heading"></a></h2>
+<dl>
+<dt>Go to the ‘’doc’’ directory to build the documentation:</dt><dd><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>~/ros2_ws/src/secured_1d_velocity_controller/doc
+</pre></div>
+</div>
+</dd>
+</dl>
 <ol class="arabic">
 <li><dl>
 <dt>Install dependencies using</dt><dd><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pipenv<span class="w"> </span>install
@@ -130,6 +135,8 @@ $ git clone <a class="reference external" href="https://github.com/yguel/secured
 </li>
 <li><dl>
 <dt>Create the parameter description file from the definition of the controller parameters using</dt><dd><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>user_guide
+<span class="gp">$ </span>ln<span class="w"> </span>-s<span class="w"> </span>../../secured_1d_velocity_controller/src/secured_1d_velocity_controller.yaml<span class="w"> </span>configuration_file_for_secured_1d_velocity_controller.yaml
+<span class="gp">$ </span>ln<span class="w"> </span>-s<span class="w"> </span>../../secured_1d_velocity_controller/test/secured_1d_velocity_controller_params.yaml
 <span class="gp">$ </span>generate_parameter_library_markdown<span class="w"> </span>--input_yaml<span class="w"> </span>configuration_file_for_secured_1d_velocity_controller.yaml<span class="w"> </span>--output_markdown_file<span class="w"> </span>secured_1d_velocity_controller_parameters.md
 <span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>..
 </pre></div>

@@ -58,7 +58,6 @@
 <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../user_guide/secured_1d_velocity_controller.html">Secure 1D Velocity Controller</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/secured_1d_velocity_controller.html#secured-1d-velocity-controller-parameters">Secured 1d Velocity Controller Parameters</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
 <ul>
@@ -91,6 +90,25 @@
              
   <section id="a-simple-example">
 <h1>A Simple Example<a class="headerlink" href="#a-simple-example" title="Link to this heading"></a></h1>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Example of a yaml configuration file for the secured 1d velocity controller</span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="nt">secured_1d_velocity_controller</span><span class="p">:</span>
+<span class="linenos"> 2</span><span class="w">  </span><span class="nt">ros__parameters</span><span class="p">:</span>
+<span class="linenos"> 3</span><span class="w">    </span><span class="nt">joint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">joint1</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="nt">start_limit</span><span class="p">:</span>
+<span class="linenos"> 5</span><span class="w">      </span><span class="nt">state_interface_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">start_limit_sensor/limit_switch</span>
+<span class="linenos"> 6</span><span class="w">      </span><span class="nt">active_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="nt">end_limit</span><span class="p">:</span>
+<span class="linenos"> 8</span><span class="w">      </span><span class="nt">state_interface_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">end_limit_sensor/limit_switch</span>
+<span class="linenos"> 9</span><span class="w">      </span><span class="nt">active_value</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="linenos">10</span><span class="w">    </span><span class="nt">reference_topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">reference_velocity</span>
+</pre></div>
+</div>
+</div>
+<p>In this example, you can suppose having a switch at each limit of the joint range of motion.
+Each of those switches emit a signal as a voltage of 0V when not activated (switch open) and 1V when activated (switch closed).
+When the joint does not reach a limit, none of the switches are activated and each of their voltage is 0V.
+When the joint reaches a limit, the corresponding switch is activated and its voltage switches to 1V.</p>
 </section>
 
 
