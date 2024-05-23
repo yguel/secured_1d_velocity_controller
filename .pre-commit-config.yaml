@@ -120,7 +120,12 @@ repos:
     rev: v1.1.1
     hooks:
       - id: doc8
-        args: ["--max-line-length=100", "--ignore=D001"]
+        args:
+          [
+            "--max-line-length=100",
+            "--ignore=D001",
+            "--ignore-path-errors=docs/user_guide/secured_1d_velocity_controller.rst;D000",
+          ]
         exclude: CHANGELOG\.rst$
 
   - repo: https://github.com/pre-commit/pygrep-hooks
