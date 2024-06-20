@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef TEMPLATES__ROS2_CONTROL__CONTROLLER__TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
-#define TEMPLATES__ROS2_CONTROL__CONTROLLER__TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
+#ifndef TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
+#define TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
 
 #include <chrono>
 #include <limits>
@@ -34,7 +34,7 @@
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "secured_1d_velocity_controller/secured_1d_velocity_controller.hpp"
 
-// TODO(anyone): replace the state and command message types
+// Declare the state and command message types
 using ControllerStateMsg =
   secured_1d_velocity_controller::Secured1dVelocityController::ControllerStateMsg;
 using ControllerReferenceMsg =
@@ -269,4 +269,4 @@ protected:
   rclcpp::Client<ControllerModeSrvType>::SharedPtr slow_control_service_client_;
 };
 
-#endif  // TEMPLATES__ROS2_CONTROL__CONTROLLER__TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
+#endif  // TEST_SECURED_1D_VELOCITY_CONTROLLER_HPP_
