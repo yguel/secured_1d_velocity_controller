@@ -136,7 +136,7 @@ public:
 
     // initialize log service client node
     std::string log_service = base_name + log_service_name_;
-    log_service_caller_node_ = std::make_shared<rclcpp::Node>("security_service_caller");
+    log_service_caller_node_ = std::make_shared<rclcpp::Node>("log_service_caller");
     log_service_client_ =
       log_service_caller_node_->create_client<ControllerModeSrvType>(log_service);
 
